@@ -2,7 +2,7 @@
 
 This Homey app is currently in development. The main goal of this app is to provided fully working speaker cards (both for the device as on your Homey dashboard).
 
-![Example](https://github.com/PendoNL/nl.pendo.spotify/blob/main/assets/exmaple.png?raw=true)
+![Example](https://github.com/PendoNL/nl.pendo.spotify/blob/main/assets/example.png?raw=true)
 
 ### How to set this up?
 
