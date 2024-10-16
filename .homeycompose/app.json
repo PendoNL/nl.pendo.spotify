@@ -1,0 +1,25 @@
+{
+  "id": "nl.pendo.spotify",
+  "version": "1.0.0",
+  "sdk": 3,
+  "brandColor": "#1DB954",
+  "compatibility": ">=12.0.0",
+  "name": {
+    "en": "Spotify"
+  },
+  "description": {
+    "en": "Control your Spotify Connect devices",
+    "nl": "Bestuur je Spotify Connect apparaten"
+  },
+  "author": {
+    "name": "Joshua de Gier",
+    "email": "joshua@pendo.nl"
+  },
+  "category": "music",
+  "images": {
+    "large": "/assets/images/large.jpg",
+    "small": "/assets/images/small.jpg"
+  },
+  "source": "https://github.com/PendoNL/nl.pendo.spotify",
+  "homepage": "https://pendo.nl"
+}

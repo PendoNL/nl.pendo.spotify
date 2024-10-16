@@ -1,0 +1,55 @@
+{
+	"id": "spotify",
+	"name": {
+		"en": "Spotify"
+	},
+	"class": "speaker",
+	"capabilities": [
+		"speaker_playing",
+		"speaker_artist",
+		"speaker_album",
+		"speaker_track",
+		"speaker_shuffle",
+		"speaker_repeat",
+		"speaker_next",
+		"speaker_prev",
+		"volume_set",
+		"volume_up",
+		"volume_down",
+		"volume_mute"
+	],
+	"capabilitiesOptions": {
+		"volume_set": {
+			"min": 0,
+			"max": 1,
+			"step": 0.01
+		}
+	},
+	"images": {
+		"large": "{{driverAssetsPath}}/images/large.jpg",
+		"small": "{{driverAssetsPath}}/images/small.jpg"
+	},
+	"pair": [
+		{
+			"id": "login_oauth2",
+			"template": "login_oauth2"
+		},
+		{
+			"id": "list_devices",
+			"template": "list_devices_singular",
+			"navigation": {
+				"next": "add_devices"
+			}
+		},
+		{
+			"id": "add_devices",
+			"template": "add_devices"
+		}
+	],
+	"repair": [
+		{
+			"id": "login_oauth2",
+			"template": "login_oauth2"
+		}
+	]
+}
