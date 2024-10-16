@@ -21,5 +21,8 @@
     "small": "/assets/images/small.jpg"
   },
   "source": "https://github.com/PendoNL/nl.pendo.spotify",
-  "homepage": "https://pendo.nl"
+  "homepage": "https://pendo.nl",
+  "bugs": {
+    "url": "https://github.com/PendoNL/nl.pendo.spotify/issues"
+  }
 }

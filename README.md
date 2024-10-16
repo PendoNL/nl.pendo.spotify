@@ -1,3 +1,3 @@
-# Spotify
+# Spotify Connect (beta)
 
-To be contin....
+This Homey app is in development, bugs may arrise
