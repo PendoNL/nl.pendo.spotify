@@ -32,3 +32,8 @@ I've just started tinkering around with Homey and it's apps. Feel free to create
 - [ ] Add flow action (not sure about this one as the official app supports these already)
 
 For the app to be publishable I need to find a way to turn the client_id and client_secret fields into app settings and have them injected into CLIENT_ID and CLIENT_SECRET constants of `SpotifyOAuth2Client`.
+
+### Thanks to
+
+- [Code sample - nl.thermostart-example](https://github.com/athombv/nl.thermosmart-example) by Athom
+- [Code sample - io.nuki-example](https://github.com/athombv/io.nuki-example) by Athom
