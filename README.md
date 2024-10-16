@@ -6,6 +6,8 @@ This Homey app is currently in development. The main goal of this app is to prov
 
 Due to rate limiting in the Spotify API, you need to create a [Spotify app](https://developer.spotify.com/dashboard) yourself. Within the context of just your own devices this should work within these limits.
 
+Choose any app name and description but make sure to set `https://callback.athom.com/oauth2/callback` as redirect URI. When asked which APIs to use select `Web API`.
+
 1. Clone this repository
 2. `cp example.env.json env.json`
 3. Add your client_id and client_secret to `env.json`
