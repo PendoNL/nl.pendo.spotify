@@ -11,7 +11,16 @@ module.exports = class SpotifyDevice extends OAuth2Device {
 		this.image = await this.homey.images.createImage();
 		this.image.setUrl(null);
 
-		this.setAlbumArtImage(this.image);
+		this.albumArtUrl = null
+	}
+
+	async updateImage(url) {
+		if(this.albumArtUrl !== url) {
+			this.albumArtUrl = url;
+
+			this.image.setUrl(url);
+			this.image.update();
+		}
 	}
 
 	onOAuth2Init() {
@@ -212,11 +221,7 @@ module.exports = class SpotifyDevice extends OAuth2Device {
 				this.setCapabilityValue('speaker_track', state.item.name)
 
 				const albumCover = state.item.album.images.find((image) => image.url)?.url;
-
-				if(albumCover) {
-					this.image.setUrl(albumCover);
-					this.image.update();
-				}
+				await this.updateImage(albumCover)
 
 			} else {
 				this.setUnavailable();

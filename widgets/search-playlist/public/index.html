@@ -1,0 +1,42 @@
+<html>
+  <head>
+    <style>
+      /* Example of a custom CSS class. */
+      .custom-image-class {
+        margin: var(--homey-su-3) auto var(--homey-su-5);
+      }
+    </style>
+  </head>
+
+  <body class="homey-widget">
+
+    <select id="device" style="width: 100%; border-radius: 3px;"></select>
+
+    <div id="log"></div>
+
+    <script type="text/javascript">
+      function onHomeyReady(Homey) {
+        Homey.ready();
+
+        var select = document.getElementById('device');
+
+        let el = document.createElement("option");
+
+        // Fetch something from your app.
+        Homey.api('GET', '/devices', {})
+          .then((result) => {
+            for (let i = 0; i < result.length; i++) {
+              let optn = result[i];
+              let el = document.createElement("option");
+              el.textContent = optn.name;
+              el.value = optn.device_id;
+              select.appendChild(el);
+            }
+
+            console.log(result);
+          })
+          .catch(console.error);
+      }
+    </script>
+  </body>
+</html>

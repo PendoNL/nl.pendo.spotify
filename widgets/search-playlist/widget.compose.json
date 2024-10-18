@@ -1,0 +1,13 @@
+{
+  "name": {
+    "en": "Search playlist"
+  },
+  "height": 188,
+  "settings": [],
+  "api": {
+    "getDevices": {
+      "method": "GET",
+      "path": "/devices"
+    }
+  }
+}
