@@ -20,7 +20,9 @@
     "large": "/assets/images/large.jpg",
     "small": "/assets/images/small.jpg"
   },
+  "homeyCommunityTopicId": 118309,
   "source": "https://github.com/PendoNL/nl.pendo.spotify",
+  "issues": "https://github.com/PendoNL/nl.pendo.spotify/issues",
   "homepage": "https://pendo.nl",
   "bugs": {
     "url": "https://github.com/PendoNL/nl.pendo.spotify/issues"

@@ -1,6 +1,6 @@
 Take control over you Spotify Connect speaker on Homey dashboard!
 
-
+Note: this app requires you to setup your own Spotify app on their developer platform.
 
 - Set volume
 - Play / pause tracks
