@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- The '/homey.js' script must be included in your settings view to work -->
+    <script type="text/javascript" src="/homey.js" data-origin="settings"
+    ></script>
+</head>
+<body>
+<header class="homey-header">
+    <h1 class="homey-title" data-i18n="settings.title"></h1>
+    <p class="homey-subtitle" data-i18n="settings.subtitle"></p>
+</header>
+
+<fieldset class="homey-form-fieldset">
+    <div class="homey-form-group">
+        <label class="homey-form-label" for="client_id">Client ID</label>
+        <input class="homey-form-input" id="client_id" type="text" value="" />
+    </div>
+    <div class="homey-form-group">
+        <label class="homey-form-label" for="client_secret">Client Secret</label>
+        <input class="homey-form-input" id="client_secret" type="password" value="" />
+    </div>
+</fieldset>
+
+<button id="save" class="homey-button-primary-full">Save changes</button>
+
+<script type="text/javascript">
+    function onHomeyReady(Homey) {
+        Homey.ready();
+
+        var clientIdElement = document.getElementById("client_id");
+        var clientSecretElement = document.getElementById("client_secret");
+        var saveElement = document.getElementById("save");
+
+        Homey.get("client_id", function (err, client_id) {
+            if (err) return Homey.alert(err);
+            clientIdElement.value = client_id;
+        });
+
+        Homey.get("client_secret", function (err, client_secret) {
+            if (err) return Homey.alert(err);
+            clientSecretElement.value = client_secret;
+        });
+
+        saveElement.addEventListener("click", function (e) {
+            Homey.set("client_secret", clientIdElement.value, function (err) {
+                if (err) return Homey.alert(err);
+            });
+            Homey.set("client_id", clientSecretElement.value, function (err) {
+                if (err) return Homey.alert(err);
+            });
+        });
+    }
+</script>
+</body>
+</html>
