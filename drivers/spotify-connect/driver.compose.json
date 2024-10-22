@@ -1,7 +1,7 @@
 {
-	"id": "spotify",
+	"id": "spotify-connect",
 	"name": {
-		"en": "Spotify"
+		"en": "Spotify Connect"
 	},
 	"class": "speaker",
 	"capabilities": [

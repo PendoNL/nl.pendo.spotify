@@ -30,12 +30,11 @@ I've just started tinkering around with Homey and it's apps. Feel free to create
   - [X] speaker_previous and speaker_next
   - [X] volume_up, volume_down, volume_mute and volume_set
   - [X] speaker_playing (pause and unpause)
-- [ ] Functionality testing
+- [X] Functionality testing
+- [X] Have Spotify `client_id` and `client_secret` to work as app setting to prevent the need to build the app
 - [ ] Code review & clean-up
 - [ ] Publish the app to Homey
 - [ ] Add flow action (not sure about this one as the official app supports these already)
-
-For the app to be publishable I need to find a way to turn the client_id and client_secret fields into app settings and have them injected into CLIENT_ID and CLIENT_SECRET constants of `SpotifyOAuth2Client`.
 
 ### Thanks to
 

@@ -43,10 +43,10 @@
         });
 
         saveElement.addEventListener("click", function (e) {
-            Homey.set("client_secret", clientIdElement.value, function (err) {
+            Homey.set("client_id", clientIdElement.value, function (err) {
                 if (err) return Homey.alert(err);
             });
-            Homey.set("client_id", clientSecretElement.value, function (err) {
+            Homey.set("client_secret", clientSecretElement.value, function (err) {
                 if (err) return Homey.alert(err);
             });
         });

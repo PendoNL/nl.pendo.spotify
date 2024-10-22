@@ -9,8 +9,8 @@
     "en": "Spotify"
   },
   "description": {
-    "en": "Control your Spotify Connect devices",
-    "nl": "Bestuur je Spotify Connect apparaten"
+    "en": "Full control over your audio experience",
+    "nl": "Neem de controle over je audio ervaring"
   },
   "author": {
     "name": "Joshua de Gier",
@@ -21,16 +21,18 @@
     "large": "/assets/images/large.jpg",
     "small": "/assets/images/small.jpg"
   },
+  "homeyCommunityTopicId": 118309,
   "source": "https://github.com/PendoNL/nl.pendo.spotify",
+  "issues": "https://github.com/PendoNL/nl.pendo.spotify/issues",
   "homepage": "https://pendo.nl",
   "bugs": {
     "url": "https://github.com/PendoNL/nl.pendo.spotify/issues"
   },
   "drivers": [
     {
-      "id": "spotify",
+      "id": "spotify-connect",
       "name": {
-        "en": "Spotify"
+        "en": "Spotify Connect"
       },
       "class": "speaker",
       "capabilities": [
@@ -55,8 +57,8 @@
         }
       },
       "images": {
-        "large": "/drivers/spotify/assets/images/large.jpg",
-        "small": "/drivers/spotify/assets/images/small.jpg"
+        "large": "/drivers/spotify-connect/assets/images/large.jpg",
+        "small": "/drivers/spotify-connect/assets/images/small.jpg"
       },
       "pair": [
         {

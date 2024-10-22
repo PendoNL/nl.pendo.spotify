@@ -5,7 +5,7 @@ const { OAuth2Device, OAuth2Token} = require('homey-oauth2app');
 
 const SYNC_INTERVAL = 1000 * 15;
 
-module.exports = class SpotifyDevice extends OAuth2Device {
+module.exports = class SpotifyConnectDevice extends OAuth2Device {
 
 	async createImage() {
 		this.image = await this.homey.images.createImage();
@@ -15,8 +15,6 @@ module.exports = class SpotifyDevice extends OAuth2Device {
 	}
 
 	onOAuth2Init() {
-		this.log('device init');
-
 		const { id } = this.getData();
 
 		this._id = id;
