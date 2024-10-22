@@ -4,5 +4,8 @@
   },
   "4.1.0": {
     "en": "Stability improvements."
+  },
+  "1.0.0": {
+    "en": "First release that adds speaker capabilities which enable a fully working media/speaker widget and it's flows in Homey"
   }
 }
