@@ -3,5 +3,9 @@
 		"start": {
 			"title": "Log in to your Spotify account"
 		}
+	},
+	"settings": {
+		"title": "Spotify Connect",
+		"subtitle": "Please provide your Spotify app details"
 	}
 }
