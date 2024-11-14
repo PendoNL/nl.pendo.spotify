@@ -7,5 +7,8 @@
   },
   "1.0.0": {
     "en": "First release that adds speaker capabilities which enable a fully working media/speaker widget and it's flows in Homey"
+  },
+  "1.0.1": {
+    "en": "Renamed the app to distinguish it from the official Spotify app"
   }
 }
