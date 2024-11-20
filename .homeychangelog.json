@@ -10,5 +10,8 @@
   },
   "1.0.1": {
     "en": "Renamed the app to distinguish it from the official Spotify app"
+  },
+  "1.0.2": {
+    "en": "Allows volume to be set between -100 and +100 (used in relative volume card)"
   }
 }
