@@ -1,0 +1,29 @@
+{
+  "title": {
+    "en": "Play an album",
+    "nl": "Speel een album"
+  },
+  "titleFormatted": {
+    "en": "Play [[album]]",
+    "nl": "Speel [[album]]"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=spotify-connect"
+    },
+    {
+      "type": "autocomplete",
+      "name": "album",
+      "title": {
+        "en": "Album",
+        "nl": "Album"
+      },
+      "placeholder": {
+        "en": "Search for an album...",
+        "nl": "Zoek een album..."
+      }
+    }
+  ]
+}

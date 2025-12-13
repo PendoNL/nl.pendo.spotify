@@ -1,0 +1,29 @@
+{
+  "title": {
+    "en": "Play a song",
+    "nl": "Speel een nummer"
+  },
+  "titleFormatted": {
+    "en": "Play [[song]]",
+    "nl": "Speel [[song]]"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=spotify-connect"
+    },
+    {
+      "type": "autocomplete",
+      "name": "song",
+      "title": {
+        "en": "Song",
+        "nl": "Nummer"
+      },
+      "placeholder": {
+        "en": "Search for a song...",
+        "nl": "Zoek een nummer..."
+      }
+    }
+  ]
+}

@@ -28,6 +28,130 @@
   "bugs": {
     "url": "https://github.com/PendoNL/nl.pendo.spotify/issues"
   },
+  "flow": {
+    "actions": [
+      {
+        "title": {
+          "en": "Play an album",
+          "nl": "Speel een album"
+        },
+        "titleFormatted": {
+          "en": "Play [[album]]",
+          "nl": "Speel [[album]]"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=spotify-connect"
+          },
+          {
+            "type": "autocomplete",
+            "name": "album",
+            "title": {
+              "en": "Album",
+              "nl": "Album"
+            },
+            "placeholder": {
+              "en": "Search for an album...",
+              "nl": "Zoek een album..."
+            }
+          }
+        ],
+        "id": "play_album"
+      },
+      {
+        "title": {
+          "en": "Play an artist",
+          "nl": "Speel een artiest"
+        },
+        "titleFormatted": {
+          "en": "Play [[artist]]",
+          "nl": "Speel [[artist]]"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=spotify-connect"
+          },
+          {
+            "type": "autocomplete",
+            "name": "artist",
+            "title": {
+              "en": "Artist",
+              "nl": "Artiest"
+            },
+            "placeholder": {
+              "en": "Search for an artist...",
+              "nl": "Zoek een artiest..."
+            }
+          }
+        ],
+        "id": "play_artist"
+      },
+      {
+        "title": {
+          "en": "Play a playlist",
+          "nl": "Speel een afspeellijst"
+        },
+        "titleFormatted": {
+          "en": "Play [[playlist]]",
+          "nl": "Speel [[playlist]]"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=spotify-connect"
+          },
+          {
+            "type": "autocomplete",
+            "name": "playlist",
+            "title": {
+              "en": "Playlist",
+              "nl": "Afspeellijst"
+            },
+            "placeholder": {
+              "en": "Search for a playlist...",
+              "nl": "Zoek een afspeellijst..."
+            }
+          }
+        ],
+        "id": "play_playlist"
+      },
+      {
+        "title": {
+          "en": "Play a song",
+          "nl": "Speel een nummer"
+        },
+        "titleFormatted": {
+          "en": "Play [[song]]",
+          "nl": "Speel [[song]]"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=spotify-connect"
+          },
+          {
+            "type": "autocomplete",
+            "name": "song",
+            "title": {
+              "en": "Song",
+              "nl": "Nummer"
+            },
+            "placeholder": {
+              "en": "Search for a song...",
+              "nl": "Zoek een nummer..."
+            }
+          }
+        ],
+        "id": "play_song"
+      }
+    ]
+  },
   "drivers": [
     {
       "id": "spotify-connect",

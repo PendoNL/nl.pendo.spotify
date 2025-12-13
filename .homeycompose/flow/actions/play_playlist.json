@@ -1,0 +1,29 @@
+{
+  "title": {
+    "en": "Play a playlist",
+    "nl": "Speel een afspeellijst"
+  },
+  "titleFormatted": {
+    "en": "Play [[playlist]]",
+    "nl": "Speel [[playlist]]"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=spotify-connect"
+    },
+    {
+      "type": "autocomplete",
+      "name": "playlist",
+      "title": {
+        "en": "Playlist",
+        "nl": "Afspeellijst"
+      },
+      "placeholder": {
+        "en": "Search for a playlist...",
+        "nl": "Zoek een afspeellijst..."
+      }
+    }
+  ]
+}

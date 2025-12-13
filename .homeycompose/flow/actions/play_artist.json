@@ -1,0 +1,29 @@
+{
+  "title": {
+    "en": "Play an artist",
+    "nl": "Speel een artiest"
+  },
+  "titleFormatted": {
+    "en": "Play [[artist]]",
+    "nl": "Speel [[artist]]"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=spotify-connect"
+    },
+    {
+      "type": "autocomplete",
+      "name": "artist",
+      "title": {
+        "en": "Artist",
+        "nl": "Artiest"
+      },
+      "placeholder": {
+        "en": "Search for an artist...",
+        "nl": "Zoek een artiest..."
+      }
+    }
+  ]
+}
