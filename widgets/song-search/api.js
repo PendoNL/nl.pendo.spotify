@@ -112,9 +112,10 @@ module.exports = {
       // Use the Spotify device ID for the API call
       const spotifyDeviceId = device.getData().id;
 
-      // Tracks use playTrack (uris array), others use playContext (context_uri)
+      // Tracks: add to queue and skip to play immediately (avoids single-track loop)
+      // Others: use playContext to start playing the artist/album/playlist
       if (type === 'track') {
-        await device.oAuth2Client.playTrack(spotifyDeviceId, uri);
+        await device.oAuth2Client.addToQueueAndSkip(spotifyDeviceId, uri);
       } else {
         await device.oAuth2Client.playContext(spotifyDeviceId, uri);
       }

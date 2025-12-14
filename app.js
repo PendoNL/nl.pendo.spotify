@@ -30,10 +30,10 @@ module.exports = class SpotifyApp extends OAuth2App {
 			}));
 		});
 
-		// Run: play the selected song
+		// Run: play the selected song (queue + skip to avoid single-track loop)
 		playSongCard.registerRunListener(async (args) => {
 			const { device, song } = args;
-			await device.oAuth2Client.playTrack(device._id, song.uri);
+			await device.oAuth2Client.addToQueueAndSkip(device._id, song.uri);
 		});
 
 		// Play Artist card
