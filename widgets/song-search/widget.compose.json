@@ -1,0 +1,21 @@
+{
+  "name": {
+    "en": "Song Search",
+    "nl": "Nummer Zoeken"
+  },
+  "height": 350,
+  "devices": {
+    "type": "app",
+    "singular": true
+  },
+  "api": {
+    "search": {
+      "method": "POST",
+      "path": "/search"
+    },
+    "play": {
+      "method": "POST",
+      "path": "/play"
+    }
+  }
+}

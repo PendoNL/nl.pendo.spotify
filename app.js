@@ -42,10 +42,10 @@ module.exports = class SpotifyApp extends OAuth2App {
 			}));
 		});
 
-		// Run: play the selected song
+		// Run: play the selected song (queue + skip to avoid single-track loop)
 		playSongCard.registerRunListener(async (args) => {
 			const { device, song } = args;
-			await device.oAuth2Client.playTrack(device._id, song.uri);
+			await device.oAuth2Client.addToQueueAndSkip(device._id, song.uri);
 		});
 
 		// Play Artist card
@@ -139,6 +139,74 @@ module.exports = class SpotifyApp extends OAuth2App {
 		wakeDeviceCard.registerRunListener(async (args) => {
 			const { zeroconf_device } = args;
 			await this.zeroConfService.wakeDevice(zeroconf_device.id);
+		});
+
+		// Add to Queue card
+		const addToQueueCard = this.homey.flow.getActionCard('add_to_queue');
+
+		addToQueueCard.registerArgumentAutocompleteListener('song', async (query, args) => {
+			if (!query || query.length < 2) return [];
+
+			const oAuth2Client = args.device.oAuth2Client;
+			const results = await oAuth2Client.search(query, 'track', 10);
+
+			return results.tracks.items.map(track => ({
+				name: track.name,
+				description: track.artists.map(a => a.name).join(', '),
+				image: track.album.images[2]?.url,
+				id: track.id,
+				uri: track.uri
+			}));
+		});
+
+		addToQueueCard.registerRunListener(async (args) => {
+			const { device, song } = args;
+			try {
+				await device.oAuth2Client.addToQueue(device._id, song.uri);
+			} catch (error) {
+				// Queue API requires active playback - fall back to direct play
+				if (error.status === 404 || error.statusCode === 404) {
+					await device.oAuth2Client.playTrack(device._id, song.uri);
+				} else {
+					throw error;
+				}
+			}
+		});
+
+		// Get Playback Info card
+		const getPlaybackInfoCard = this.homey.flow.getActionCard('get_playback_info');
+
+		getPlaybackInfoCard.registerRunListener(async (args) => {
+			const { device } = args;
+			const state = await device.oAuth2Client.state();
+
+			if (!state || !state.item) {
+				return {
+					track_name: '',
+					artist_name: '',
+					album_name: '',
+					progress_seconds: 0,
+					duration_seconds: 0,
+					progress_percent: 0,
+					is_playing: false
+				};
+			}
+
+			const progressMs = state.progress_ms || 0;
+			const durationMs = state.item.duration_ms || 0;
+			const progressSeconds = Math.round(progressMs / 1000);
+			const durationSeconds = Math.round(durationMs / 1000);
+			const progressPercent = durationMs > 0 ? Math.round((progressMs / durationMs) * 100) : 0;
+
+			return {
+				track_name: state.item.name || '',
+				artist_name: state.item.artists?.map(a => a.name).join(', ') || '',
+				album_name: state.item.album?.name || '',
+				progress_seconds: progressSeconds,
+				duration_seconds: durationSeconds,
+				progress_percent: progressPercent,
+				is_playing: state.is_playing || false
+			};
 		});
 	}
 

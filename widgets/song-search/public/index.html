@@ -1,0 +1,254 @@
+<html>
+  <head>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body.homey-widget {
+        display: flex;
+        flex-direction: column;
+        gap: var(--homey-su-2);
+        height: 100%;
+        overflow: hidden;
+      }
+
+      .search-container {
+        position: relative;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: var(--homey-su-2);
+        padding-left: var(--homey-su-6);
+        border: 1px solid var(--homey-color-mono-300);
+        border-radius: var(--homey-border-radius);
+        font-size: var(--homey-font-size-default);
+        background-color: var(--homey-color-mono-100);
+        color: var(--homey-text-color);
+        outline: none;
+      }
+
+      .search-input:focus {
+        border-color: var(--homey-color-primary-500);
+      }
+
+      .search-input::placeholder {
+        color: var(--homey-color-mono-500);
+      }
+
+      .search-icon {
+        position: absolute;
+        left: var(--homey-su-2);
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--homey-color-mono-500);
+        pointer-events: none;
+      }
+
+      .results {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: var(--homey-su-1);
+      }
+
+      .song-item {
+        display: flex;
+        align-items: center;
+        gap: var(--homey-su-2);
+        padding: var(--homey-su-2);
+        background-color: var(--homey-color-mono-100);
+        border-radius: var(--homey-border-radius);
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+      }
+
+      .song-item:hover {
+        background-color: var(--homey-color-mono-200);
+      }
+
+      .song-item:active {
+        background-color: var(--homey-color-mono-300);
+      }
+
+      .song-image {
+        width: 40px;
+        height: 40px;
+        border-radius: 4px;
+        object-fit: cover;
+        background-color: var(--homey-color-mono-200);
+      }
+
+      .song-info {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .song-name {
+        font-size: var(--homey-font-size-default);
+        font-weight: 500;
+        color: var(--homey-text-color);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .song-artist {
+        font-size: var(--homey-font-size-small);
+        color: var(--homey-color-mono-600);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .type-badge {
+        font-size: 9px;
+        padding: 2px 6px;
+        border-radius: 3px;
+        text-transform: uppercase;
+        font-weight: 600;
+        flex-shrink: 0;
+      }
+
+      .type-track { background: #1DB954; color: white; }
+      .type-artist { background: #9B59B6; color: white; }
+      .type-album { background: #3498DB; color: white; }
+      .type-playlist { background: #E67E22; color: white; }
+
+      .message {
+        text-align: center;
+        padding: var(--homey-su-4);
+        color: var(--homey-color-mono-500);
+        font-size: var(--homey-font-size-small);
+      }
+
+      .playing {
+        background-color: var(--homey-color-primary-100);
+      }
+    </style>
+  </head>
+
+  <body class="homey-widget">
+    <div class="search-container">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </svg>
+      <input
+        type="text"
+        class="search-input"
+        id="searchInput"
+        placeholder="Search songs, artists, albums..."
+        autocomplete="off"
+      >
+    </div>
+
+    <div class="results" id="results">
+      <div class="message" id="message">Type to search Spotify</div>
+    </div>
+
+    <script type="text/javascript">
+      let searchTimeout;
+      let deviceId = null;
+
+      function onHomeyReady(Homey) {
+        Homey.ready();
+
+        // Get device IDs from widget device selector
+        const deviceIds = Homey.getDeviceIds();
+        deviceId = deviceIds && deviceIds.length > 0 ? deviceIds[0] : null;
+
+        const searchInput = document.getElementById('searchInput');
+        const resultsDiv = document.getElementById('results');
+        const messageDiv = document.getElementById('message');
+
+        if (!deviceId) {
+          messageDiv.textContent = 'Please select a device in widget settings';
+          searchInput.disabled = true;
+          return;
+        }
+
+        searchInput.addEventListener('input', (event) => {
+          clearTimeout(searchTimeout);
+          const query = event.target.value.trim();
+
+          if (query.length < 2) {
+            resultsDiv.innerHTML = '<div class="message">Type to search Spotify</div>';
+            return;
+          }
+
+          resultsDiv.innerHTML = '<div class="message">Searching...</div>';
+
+          searchTimeout = setTimeout(() => {
+            Homey.api('POST', '/search', { query, deviceId })
+              .then((results) => {
+                if (results.length === 0) {
+                  resultsDiv.innerHTML = '<div class="message">No songs found</div>';
+                  return;
+                }
+
+                resultsDiv.innerHTML = '';
+
+                results.forEach(item => {
+                  const div = document.createElement('div');
+                  div.className = 'song-item';
+
+                  const img = document.createElement('img');
+                  img.className = 'song-image';
+                  img.src = item.image || '';
+                  img.alt = '';
+                  img.onerror = () => { img.style.display = 'none'; };
+
+                  const info = document.createElement('div');
+                  info.className = 'song-info';
+
+                  const name = document.createElement('div');
+                  name.className = 'song-name';
+                  name.textContent = item.name;
+
+                  const subtitle = document.createElement('div');
+                  subtitle.className = 'song-artist';
+                  subtitle.textContent = item.subtitle;
+
+                  info.appendChild(name);
+                  info.appendChild(subtitle);
+
+                  const badge = document.createElement('span');
+                  badge.className = 'type-badge type-' + item.type;
+                  badge.textContent = item.type;
+
+                  div.appendChild(img);
+                  div.appendChild(info);
+                  div.appendChild(badge);
+
+                  div.addEventListener('click', () => {
+                    div.classList.add('playing');
+
+                    Homey.api('POST', '/play', { deviceId, uri: item.uri, type: item.type })
+                      .then(() => {
+                        setTimeout(() => {
+                          div.classList.remove('playing');
+                        }, 1000);
+                      })
+                      .catch((err) => {
+                        div.classList.remove('playing');
+                        console.error('Play error:', err);
+                      });
+                  });
+
+                  resultsDiv.appendChild(div);
+                });
+              })
+              .catch((err) => {
+                console.error('Search error:', err);
+                resultsDiv.innerHTML = '<div class="message">Search failed</div>';
+              });
+          }, 300);
+        });
+      }
+    </script>
+  </body>
+</html>
