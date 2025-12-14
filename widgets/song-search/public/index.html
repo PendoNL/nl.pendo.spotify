@@ -104,6 +104,20 @@
         text-overflow: ellipsis;
       }
 
+      .type-badge {
+        font-size: 9px;
+        padding: 2px 6px;
+        border-radius: 3px;
+        text-transform: uppercase;
+        font-weight: 600;
+        flex-shrink: 0;
+      }
+
+      .type-track { background: #1DB954; color: white; }
+      .type-artist { background: #9B59B6; color: white; }
+      .type-album { background: #3498DB; color: white; }
+      .type-playlist { background: #E67E22; color: white; }
+
       .message {
         text-align: center;
         padding: var(--homey-su-4);
@@ -127,13 +141,13 @@
         type="text"
         class="search-input"
         id="searchInput"
-        placeholder="Search for a song..."
+        placeholder="Search songs, artists, albums..."
         autocomplete="off"
       >
     </div>
 
     <div class="results" id="results">
-      <div class="message" id="message">Type to search for songs</div>
+      <div class="message" id="message">Type to search Spotify</div>
     </div>
 
     <script type="text/javascript">
@@ -143,15 +157,16 @@
       function onHomeyReady(Homey) {
         Homey.ready();
 
-        const settings = Homey.getSettings();
-        deviceId = settings.device;
+        // Get device IDs from widget device selector
+        const deviceIds = Homey.getDeviceIds();
+        deviceId = deviceIds && deviceIds.length > 0 ? deviceIds[0] : null;
 
         const searchInput = document.getElementById('searchInput');
         const resultsDiv = document.getElementById('results');
         const messageDiv = document.getElementById('message');
 
         if (!deviceId) {
-          messageDiv.textContent = 'Please configure a device in widget settings';
+          messageDiv.textContent = 'Please select a device in widget settings';
           searchInput.disabled = true;
           return;
         }
@@ -161,7 +176,7 @@
           const query = event.target.value.trim();
 
           if (query.length < 2) {
-            resultsDiv.innerHTML = '<div class="message">Type to search for songs</div>';
+            resultsDiv.innerHTML = '<div class="message">Type to search Spotify</div>';
             return;
           }
 
@@ -177,13 +192,13 @@
 
                 resultsDiv.innerHTML = '';
 
-                results.forEach(song => {
+                results.forEach(item => {
                   const div = document.createElement('div');
                   div.className = 'song-item';
 
                   const img = document.createElement('img');
                   img.className = 'song-image';
-                  img.src = song.image || '';
+                  img.src = item.image || '';
                   img.alt = '';
                   img.onerror = () => { img.style.display = 'none'; };
 
@@ -192,21 +207,27 @@
 
                   const name = document.createElement('div');
                   name.className = 'song-name';
-                  name.textContent = song.name;
+                  name.textContent = item.name;
 
-                  const artist = document.createElement('div');
-                  artist.className = 'song-artist';
-                  artist.textContent = song.artist;
+                  const subtitle = document.createElement('div');
+                  subtitle.className = 'song-artist';
+                  subtitle.textContent = item.subtitle;
 
                   info.appendChild(name);
-                  info.appendChild(artist);
+                  info.appendChild(subtitle);
+
+                  const badge = document.createElement('span');
+                  badge.className = 'type-badge type-' + item.type;
+                  badge.textContent = item.type;
+
                   div.appendChild(img);
                   div.appendChild(info);
+                  div.appendChild(badge);
 
                   div.addEventListener('click', () => {
                     div.classList.add('playing');
 
-                    Homey.api('POST', '/play', { deviceId, trackUri: song.uri })
+                    Homey.api('POST', '/play', { deviceId, uri: item.uri, type: item.type })
                       .then(() => {
                         setTimeout(() => {
                           div.classList.remove('playing');

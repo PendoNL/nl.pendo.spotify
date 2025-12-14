@@ -4,17 +4,10 @@
     "nl": "Nummer Zoeken"
   },
   "height": 350,
-  "settings": [
-    {
-      "type": "device",
-      "id": "device",
-      "title": {
-        "en": "Spotify Device",
-        "nl": "Spotify Apparaat"
-      },
-      "filter": "driver_id=spotify-connect"
-    }
-  ],
+  "devices": {
+    "type": "app",
+    "singular": true
+  },
   "api": {
     "search": {
       "method": "POST",
