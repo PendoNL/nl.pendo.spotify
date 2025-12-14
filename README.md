@@ -22,19 +22,7 @@ I've just started tinkering around with Homey and it's apps. Feel free to create
 
 ### Plans
 
-- [X] Get Spotify OAuth2 working
-- [X] Get a working Spotify device using this driver
-- [X] Implement speaker-related abilities
-  - [X] Load player state (artist, song, album, shuffle mode, repeat, volume, playing)
-  - [X] Set the album cover media element for the device
-  - [X] speaker_previous and speaker_next
-  - [X] volume_up, volume_down, volume_mute and volume_set
-  - [X] speaker_playing (pause and unpause)
-- [X] Functionality testing
-- [X] Have Spotify `client_id` and `client_secret` to work as app setting to prevent the need to build the app
-- [ ] Code review & clean-up
-- [ ] Publish the app to Homey
-- [ ] Add flow action (not sure about this one as the official app supports these already)
+For feature requests and an active roadmap please visit [the Homey Community topic](https://community.homey.app/t/app-pro-spotify-connect/118309).
 
 ### Thanks to
 
