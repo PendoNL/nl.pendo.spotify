@@ -1,0 +1,28 @@
+{
+  "name": {
+    "en": "Song Search",
+    "nl": "Nummer Zoeken"
+  },
+  "height": 350,
+  "settings": [
+    {
+      "type": "device",
+      "id": "device",
+      "title": {
+        "en": "Spotify Device",
+        "nl": "Spotify Apparaat"
+      },
+      "filter": "driver_id=spotify-connect"
+    }
+  ],
+  "api": {
+    "search": {
+      "method": "POST",
+      "path": "/search"
+    },
+    "play": {
+      "method": "POST",
+      "path": "/play"
+    }
+  }
+}

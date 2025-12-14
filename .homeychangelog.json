@@ -13,5 +13,8 @@
   },
   "1.0.2": {
     "en": "Allows volume to be set between -100 and +100 (used in relative volume card)"
+  },
+  "1.1.0": {
+    "en": "4 new flow charts are available to start playback (song, artist, album and playlist)"
   }
 }
