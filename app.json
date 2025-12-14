@@ -32,6 +32,86 @@
     "actions": [
       {
         "title": {
+          "en": "Get current playback info",
+          "nl": "Haal huidige afspeelinfo op"
+        },
+        "titleFormatted": {
+          "en": "Get current playback info",
+          "nl": "Haal huidige afspeelinfo op"
+        },
+        "hint": {
+          "en": "Returns information about the currently playing track including progress",
+          "nl": "Geeft informatie over het huidige nummer inclusief voortgang"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=spotify-connect"
+          }
+        ],
+        "tokens": [
+          {
+            "name": "track_name",
+            "type": "string",
+            "title": {
+              "en": "Track name",
+              "nl": "Nummer naam"
+            }
+          },
+          {
+            "name": "artist_name",
+            "type": "string",
+            "title": {
+              "en": "Artist",
+              "nl": "Artiest"
+            }
+          },
+          {
+            "name": "album_name",
+            "type": "string",
+            "title": {
+              "en": "Album",
+              "nl": "Album"
+            }
+          },
+          {
+            "name": "progress_seconds",
+            "type": "number",
+            "title": {
+              "en": "Progress (seconds)",
+              "nl": "Voortgang (seconden)"
+            }
+          },
+          {
+            "name": "duration_seconds",
+            "type": "number",
+            "title": {
+              "en": "Duration (seconds)",
+              "nl": "Duur (seconden)"
+            }
+          },
+          {
+            "name": "progress_percent",
+            "type": "number",
+            "title": {
+              "en": "Progress (%)",
+              "nl": "Voortgang (%)"
+            }
+          },
+          {
+            "name": "is_playing",
+            "type": "boolean",
+            "title": {
+              "en": "Is playing",
+              "nl": "Speelt af"
+            }
+          }
+        ],
+        "id": "get_playback_info"
+      },
+      {
+        "title": {
           "en": "Play an album",
           "nl": "Speel een album"
         },

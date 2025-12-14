@@ -107,6 +107,42 @@ module.exports = class SpotifyApp extends OAuth2App {
 			const { device, album } = args;
 			await device.oAuth2Client.playContext(device._id, album.uri);
 		});
+
+		// Get Playback Info card
+		const getPlaybackInfoCard = this.homey.flow.getActionCard('get_playback_info');
+
+		getPlaybackInfoCard.registerRunListener(async (args) => {
+			const { device } = args;
+			const state = await device.oAuth2Client.state();
+
+			if (!state || !state.item) {
+				return {
+					track_name: '',
+					artist_name: '',
+					album_name: '',
+					progress_seconds: 0,
+					duration_seconds: 0,
+					progress_percent: 0,
+					is_playing: false
+				};
+			}
+
+			const progressMs = state.progress_ms || 0;
+			const durationMs = state.item.duration_ms || 0;
+			const progressSeconds = Math.round(progressMs / 1000);
+			const durationSeconds = Math.round(durationMs / 1000);
+			const progressPercent = durationMs > 0 ? Math.round((progressMs / durationMs) * 100) : 0;
+
+			return {
+				track_name: state.item.name || '',
+				artist_name: state.item.artists?.map(a => a.name).join(', ') || '',
+				album_name: state.item.album?.name || '',
+				progress_seconds: progressSeconds,
+				duration_seconds: durationSeconds,
+				progress_percent: progressPercent,
+				is_playing: state.is_playing || false
+			};
+		});
 	}
 
 }
