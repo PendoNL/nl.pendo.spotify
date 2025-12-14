@@ -16,5 +16,8 @@
   },
   "1.1.0": {
     "en": "4 new flow charts are available to start playback (song, artist, album and playlist)"
+  },
+  "1.2.0": {
+    "en": "Adds a widget to search Spotify songs, artists, albums and playlists and starts playback on the (to the widget) connected device."
   }
 }
