@@ -108,6 +108,38 @@ module.exports = class SpotifyApp extends OAuth2App {
 			await device.oAuth2Client.playContext(device._id, album.uri);
 		});
 
+		// Add to Queue card
+		const addToQueueCard = this.homey.flow.getActionCard('add_to_queue');
+
+		addToQueueCard.registerArgumentAutocompleteListener('song', async (query, args) => {
+			if (!query || query.length < 2) return [];
+
+			const oAuth2Client = args.device.oAuth2Client;
+			const results = await oAuth2Client.search(query, 'track', 10);
+
+			return results.tracks.items.map(track => ({
+				name: track.name,
+				description: track.artists.map(a => a.name).join(', '),
+				image: track.album.images[2]?.url,
+				id: track.id,
+				uri: track.uri
+			}));
+		});
+
+		addToQueueCard.registerRunListener(async (args) => {
+			const { device, song } = args;
+			try {
+				await device.oAuth2Client.addToQueue(device._id, song.uri);
+			} catch (error) {
+				// Queue API requires active playback - fall back to direct play
+				if (error.status === 404 || error.statusCode === 404) {
+					await device.oAuth2Client.playTrack(device._id, song.uri);
+				} else {
+					throw error;
+				}
+			}
+		});
+
 		// Get Playback Info card
 		const getPlaybackInfoCard = this.homey.flow.getActionCard('get_playback_info');
 

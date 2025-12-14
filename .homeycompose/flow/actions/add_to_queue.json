@@ -1,0 +1,33 @@
+{
+  "title": {
+    "en": "Add song to queue",
+    "nl": "Voeg nummer toe aan wachtrij"
+  },
+  "titleFormatted": {
+    "en": "Add [[song]] to queue",
+    "nl": "Voeg [[song]] toe aan wachtrij"
+  },
+  "hint": {
+    "en": "Adds a song to the end of the queue. If nothing is playing, it will start playback.",
+    "nl": "Voegt een nummer toe aan het einde van de wachtrij. Als er niets speelt, wordt het afgespeeld."
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=spotify-connect"
+    },
+    {
+      "type": "autocomplete",
+      "name": "song",
+      "title": {
+        "en": "Song",
+        "nl": "Nummer"
+      },
+      "placeholder": {
+        "en": "Search for a song...",
+        "nl": "Zoek een nummer..."
+      }
+    }
+  ]
+}
