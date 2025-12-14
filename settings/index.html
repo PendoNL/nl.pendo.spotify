@@ -24,6 +24,34 @@
 
 <button id="save" class="homey-button-primary-full">Save changes</button>
 
+<hr style="margin: 24px 0; border: none; border-top: 1px solid #e0e0e0;">
+
+<header class="homey-header">
+    <h2 class="homey-title">Device Wake (ZeroConf)</h2>
+    <p class="homey-subtitle">Pair with Spotify to wake devices on your network</p>
+</header>
+
+<fieldset class="homey-form-fieldset">
+    <div class="homey-form-group">
+        <label class="homey-form-label">Pairing Status</label>
+        <p id="pairing-status" style="margin: 8px 0; color: #666;">Checking...</p>
+    </div>
+    <div class="homey-form-group">
+        <label class="homey-form-label">Discovered Devices</label>
+        <ul id="discovered-devices" style="margin: 8px 0; padding-left: 20px; color: #666;">
+            <li>Scanning...</li>
+        </ul>
+    </div>
+</fieldset>
+
+<button id="start-pairing" class="homey-button-primary-full">Start Pairing Mode</button>
+<button id="stop-pairing" class="homey-button-secondary-full" style="margin-top: 8px; display: none;">Stop Pairing Mode</button>
+
+<p id="pairing-instructions" style="margin-top: 16px; padding: 12px; background: #f5f5f5; border-radius: 4px; display: none;">
+    <strong>Pairing Active!</strong><br>
+    Open your Spotify app and look for "Homey Spotify" in your available devices. Tap it to complete pairing.
+</p>
+
 <script type="text/javascript">
     function onHomeyReady(Homey) {
         Homey.ready();
@@ -48,6 +76,61 @@
             });
             Homey.set("client_secret", clientSecretElement.value, function (err) {
                 if (err) return Homey.alert(err);
+            });
+        });
+
+        // ZeroConf Pairing
+        var pairingStatus = document.getElementById("pairing-status");
+        var discoveredDevices = document.getElementById("discovered-devices");
+        var startPairingBtn = document.getElementById("start-pairing");
+        var stopPairingBtn = document.getElementById("stop-pairing");
+        var pairingInstructions = document.getElementById("pairing-instructions");
+
+        // Check pairing status
+        Homey.get("spotify_zeroconf_credentials", function (err, creds) {
+            if (creds && creds.userName) {
+                pairingStatus.innerHTML = '<span style="color: green;">&#10003;</span> Paired as: ' + creds.userName;
+            } else {
+                pairingStatus.innerHTML = '<span style="color: orange;">&#9888;</span> Not paired yet';
+            }
+        });
+
+        // Refresh discovered devices
+        function refreshDevices() {
+            Homey.api("GET", "/discovered-devices", function (err, devices) {
+                if (err || !devices || devices.length === 0) {
+                    discoveredDevices.innerHTML = "<li>No devices found</li>";
+                } else {
+                    discoveredDevices.innerHTML = devices.map(function(d) {
+                        return "<li>" + d.name + " (" + d.host + ")</li>";
+                    }).join("");
+                }
+            });
+        }
+        refreshDevices();
+        setInterval(refreshDevices, 5000);
+
+        startPairingBtn.addEventListener("click", function () {
+            Homey.api("POST", "/start-pairing", {}, function (err, result) {
+                if (err) return Homey.alert("Failed to start pairing: " + err);
+                startPairingBtn.style.display = "none";
+                stopPairingBtn.style.display = "block";
+                pairingInstructions.style.display = "block";
+            });
+        });
+
+        stopPairingBtn.addEventListener("click", function () {
+            Homey.api("POST", "/stop-pairing", {}, function (err, result) {
+                if (err) return Homey.alert("Failed to stop pairing: " + err);
+                startPairingBtn.style.display = "block";
+                stopPairingBtn.style.display = "none";
+                pairingInstructions.style.display = "none";
+                // Refresh status
+                Homey.get("spotify_zeroconf_credentials", function (err, creds) {
+                    if (creds && creds.userName) {
+                        pairingStatus.innerHTML = '<span style="color: green;">&#10003;</span> Paired as: ' + creds.userName;
+                    }
+                });
             });
         });
     }

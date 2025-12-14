@@ -1,0 +1,28 @@
+{
+  "title": {
+    "en": "Wake a Spotify device",
+    "nl": "Activeer een Spotify apparaat"
+  },
+  "titleFormatted": {
+    "en": "Wake [[zeroconf_device]]",
+    "nl": "Activeer [[zeroconf_device]]"
+  },
+  "hint": {
+    "en": "Wake a Spotify Connect device on your network using ZeroConf. Requires pairing first.",
+    "nl": "Activeer een Spotify Connect apparaat op je netwerk via ZeroConf. Vereist eerst koppeling."
+  },
+  "args": [
+    {
+      "type": "autocomplete",
+      "name": "zeroconf_device",
+      "title": {
+        "en": "Device",
+        "nl": "Apparaat"
+      },
+      "placeholder": {
+        "en": "Select a device...",
+        "nl": "Selecteer een apparaat..."
+      }
+    }
+  ]
+}

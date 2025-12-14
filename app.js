@@ -3,6 +3,7 @@
 const { OAuth2App } = require('homey-oauth2app');
 
 const SpotifyConnectOAuth2Client = require('./lib/SpotifyConnectOAuth2Client');
+const SpotifyZeroConfService = require('./lib/SpotifyZeroConfService');
 
 module.exports = class SpotifyApp extends OAuth2App {
 
@@ -11,6 +12,17 @@ module.exports = class SpotifyApp extends OAuth2App {
 
 	async onInit() {
 		await super.onInit();
+
+		// Initialize ZeroConf service for device wake functionality
+		this.zeroConfService = new SpotifyZeroConfService(this.homey);
+
+		// Start device discovery in background
+		this._startBackgroundDiscovery();
+
+		// Listen for credential capture events
+		this.homey.on('spotify_credentials_captured', ({ userName }) => {
+			this.log(`Spotify credentials captured for user: ${userName}`);
+		});
 
 		const playSongCard = this.homey.flow.getActionCard('play_song');
 
@@ -107,6 +119,84 @@ module.exports = class SpotifyApp extends OAuth2App {
 			const { device, album } = args;
 			await device.oAuth2Client.playContext(device._id, album.uri);
 		});
+
+		// Wake Device card
+		const wakeDeviceCard = this.homey.flow.getActionCard('wake_device');
+
+		wakeDeviceCard.registerArgumentAutocompleteListener('zeroconf_device', async (query) => {
+			const devices = this.zeroConfService.getDiscoveredDevices();
+			const queryLower = (query || '').toLowerCase();
+
+			return devices
+				.filter(device => !query || device.name.toLowerCase().includes(queryLower))
+				.map(device => ({
+					name: device.name,
+					description: `${device.host}:${device.port}`,
+					id: device.name
+				}));
+		});
+
+		wakeDeviceCard.registerRunListener(async (args) => {
+			const { zeroconf_device } = args;
+			await this.zeroConfService.wakeDevice(zeroconf_device.id);
+		});
+	}
+
+	/**
+	 * Start background discovery of Spotify Connect devices
+	 */
+	_startBackgroundDiscovery() {
+		try {
+			this.zeroConfService.startDiscovery();
+			this.log('Background Spotify device discovery started');
+		} catch (error) {
+			this.error('Failed to start device discovery:', error);
+		}
+	}
+
+	/**
+	 * Start ZeroConf pairing mode
+	 * Called from settings page
+	 */
+	async startPairingMode(deviceName = 'Homey Spotify') {
+		return this.zeroConfService.startPairingMode(deviceName);
+	}
+
+	/**
+	 * Stop ZeroConf pairing mode
+	 */
+	async stopPairingMode() {
+		return this.zeroConfService.stopPairingMode();
+	}
+
+	/**
+	 * Check if we have stored ZeroConf credentials
+	 */
+	hasZeroConfCredentials() {
+		return this.zeroConfService.hasCredentials();
+	}
+
+	/**
+	 * Get discovered Spotify Connect devices
+	 */
+	getDiscoveredDevices() {
+		return this.zeroConfService.getDiscoveredDevices();
+	}
+
+	/**
+	 * Wake a specific device
+	 */
+	async wakeDevice(deviceName) {
+		return this.zeroConfService.wakeDevice(deviceName);
+	}
+
+	/**
+	 * Cleanup on app unload
+	 */
+	async onUninit() {
+		if (this.zeroConfService) {
+			this.zeroConfService.destroy();
+		}
 	}
 
 }

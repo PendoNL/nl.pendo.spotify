@@ -2,6 +2,7 @@
 /CLAUDE.md
 /node_modules
 /env.json
+/.notes
 
 # Added by Homey CLI
 /.homeybuild/

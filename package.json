@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "homey-oauth2app": "^3.5.7"
+    "bonjour-service": "^1.3.0",
+    "homey-oauth2app": "^3.5.7",
+    "spotify-zeroconf": "^0.1.4"
   }
 }
