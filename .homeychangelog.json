@@ -22,5 +22,8 @@
   },
   "1.2.1": {
     "en": "Utilizes the existing queue when starting a single song and resumes the queue afterwards"
+  },
+  "1.3.0": {
+    "en": "Adds currently playback info Flow card"
   }
 }
