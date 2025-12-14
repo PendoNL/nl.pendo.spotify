@@ -19,5 +19,8 @@
   },
   "1.2.0": {
     "en": "Adds a widget to search Spotify songs, artists, albums and playlists and starts playback on the (to the widget) connected device."
+  },
+  "1.2.1": {
+    "en": "Utilizes the existing queue when starting a single song and resumes the queue afterwards"
   }
 }
