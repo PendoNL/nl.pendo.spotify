@@ -26,6 +26,18 @@ module.exports = {
     }
     await homey.app.wakeDevice(deviceName);
     return { success: true };
+  },
+
+  async resetIdentity({ homey }) {
+    return homey.app.resetZeroConfIdentity();
+  },
+
+  async wakeDeviceByHost({ homey, body }) {
+    const { host, port } = body;
+    if (!host) {
+      throw new Error('host is required');
+    }
+    return homey.app.wakeDeviceByHost(host, port || 4070);
   }
 
 };

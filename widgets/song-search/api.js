@@ -109,15 +109,13 @@ module.exports = {
         throw new Error('Device not found');
       }
 
-      // Use the Spotify device ID for the API call
-      const spotifyDeviceId = device.getData().id;
-
+      // Use device methods with wake/retry logic
       // Tracks: add to queue and skip to play immediately (avoids single-track loop)
       // Others: use playContext to start playing the artist/album/playlist
       if (type === 'track') {
-        await device.oAuth2Client.addToQueueAndSkip(spotifyDeviceId, uri);
+        await device.playTrackWithRetry(uri);
       } else {
-        await device.oAuth2Client.playContext(spotifyDeviceId, uri);
+        await device.playContextWithRetry(uri);
       }
 
       return { success: true };

@@ -48,6 +48,14 @@
     "wakeDevice": {
       "method": "POST",
       "path": "/wake-device"
+    },
+    "resetIdentity": {
+      "method": "POST",
+      "path": "/reset-identity"
+    },
+    "wakeDeviceByHost": {
+      "method": "POST",
+      "path": "/wake-device-by-host"
     }
   },
   "flow": {
@@ -85,6 +93,68 @@
           }
         ],
         "id": "add_to_queue"
+      },
+      {
+        "title": {
+          "en": "Get available Spotify devices",
+          "nl": "Haal beschikbare Spotify apparaten op"
+        },
+        "hint": {
+          "en": "Returns a list of available Spotify Connect devices from your account.",
+          "nl": "Geeft een lijst van beschikbare Spotify Connect apparaten van je account terug."
+        },
+        "args": [],
+        "tokens": [
+          {
+            "name": "device_names",
+            "type": "string",
+            "title": {
+              "en": "Device names",
+              "nl": "Apparaatnamen"
+            },
+            "example": {
+              "en": "Living Room Speaker, Kitchen Display",
+              "nl": "Woonkamer Speaker, Keuken Display"
+            }
+          },
+          {
+            "name": "device_count",
+            "type": "number",
+            "title": {
+              "en": "Device count",
+              "nl": "Aantal apparaten"
+            },
+            "example": {
+              "en": "3",
+              "nl": "3"
+            }
+          },
+          {
+            "name": "active_device",
+            "type": "string",
+            "title": {
+              "en": "Active device",
+              "nl": "Actief apparaat"
+            },
+            "example": {
+              "en": "Living Room Speaker",
+              "nl": "Woonkamer Speaker"
+            }
+          },
+          {
+            "name": "device_ids",
+            "type": "string",
+            "title": {
+              "en": "Device IDs",
+              "nl": "Apparaat IDs"
+            },
+            "example": {
+              "en": "abc123,def456",
+              "nl": "abc123,def456"
+            }
+          }
+        ],
+        "id": "get_devices"
       },
       {
         "title": {
@@ -288,29 +358,69 @@
       },
       {
         "title": {
-          "en": "Wake a Spotify device",
-          "nl": "Activeer een Spotify apparaat"
+          "en": "Transfer playback",
+          "nl": "Verplaats afspelen"
         },
         "titleFormatted": {
-          "en": "Wake [[zeroconf_device]]",
-          "nl": "Activeer [[zeroconf_device]]"
+          "en": "Transfer playback to [[device]]",
+          "nl": "Verplaats afspelen naar [[device]]"
         },
         "hint": {
-          "en": "Wake a Spotify Connect device on your network using ZeroConf. Requires pairing first.",
-          "nl": "Activeer een Spotify Connect apparaat op je netwerk via ZeroConf. Vereist eerst koppeling."
+          "en": "Transfer Spotify playback to a Spotify Connect device on your account.",
+          "nl": "Verplaats Spotify afspelen naar een Spotify Connect apparaat op je account."
         },
         "args": [
           {
             "type": "autocomplete",
-            "name": "zeroconf_device",
+            "name": "device",
             "title": {
               "en": "Device",
               "nl": "Apparaat"
             },
             "placeholder": {
-              "en": "Select a device...",
-              "nl": "Selecteer een apparaat..."
+              "en": "Search for a device...",
+              "nl": "Zoek een apparaat..."
             }
+          }
+        ],
+        "id": "transfer_playback"
+      },
+      {
+        "title": {
+          "en": "Wake a Spotify device",
+          "nl": "Activeer een Spotify apparaat"
+        },
+        "titleFormatted": {
+          "en": "Wake Spotify device at [[hostname]]:[[port]]",
+          "nl": "Activeer Spotify apparaat op [[hostname]]:[[port]]"
+        },
+        "hint": {
+          "en": "Wake a Spotify Connect device on your network using ZeroConf. Enter the hostname (e.g. pendo.local) or IP address. Requires pairing first.",
+          "nl": "Activeer een Spotify Connect apparaat op je netwerk via ZeroConf. Voer de hostnaam (bijv. pendo.local) of IP-adres in. Vereist eerst koppeling."
+        },
+        "args": [
+          {
+            "type": "text",
+            "name": "hostname",
+            "title": {
+              "en": "Hostname / IP",
+              "nl": "Hostnaam / IP"
+            },
+            "placeholder": {
+              "en": "e.g. pendo.local or 192.168.1.100",
+              "nl": "bijv. pendo.local of 192.168.1.100"
+            }
+          },
+          {
+            "type": "number",
+            "name": "port",
+            "title": {
+              "en": "Port",
+              "nl": "Poort"
+            },
+            "value": 4070,
+            "min": 1,
+            "max": 65535
           }
         ],
         "id": "wake_device"
@@ -370,6 +480,45 @@
         {
           "id": "login_oauth2",
           "template": "login_oauth2"
+        }
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "ZeroConf Wake",
+            "nl": "ZeroConf Wake"
+          },
+          "children": [
+            {
+              "id": "wake_host",
+              "type": "text",
+              "label": {
+                "en": "Wake Host (IP/hostname)",
+                "nl": "Wake Host (IP/hostnaam)"
+              },
+              "hint": {
+                "en": "Auto-detected during pairing if device is online. Manual: IP address or hostname (e.g. 192.168.1.100 or speaker.local)",
+                "nl": "Automatisch gedetecteerd bij koppelen als apparaat online is. Handmatig: IP-adres of hostnaam (bijv. 192.168.1.100 of speaker.local)"
+              },
+              "value": ""
+            },
+            {
+              "id": "wake_port",
+              "type": "number",
+              "label": {
+                "en": "Wake Port",
+                "nl": "Wake Poort"
+              },
+              "hint": {
+                "en": "Port number for ZeroConf API (default: 4070)",
+                "nl": "Poortnummer voor ZeroConf API (standaard: 4070)"
+              },
+              "value": 4070,
+              "min": 1,
+              "max": 65535
+            }
+          ]
         }
       ]
     }

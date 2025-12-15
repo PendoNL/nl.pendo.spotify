@@ -51,5 +51,44 @@
 			"id": "login_oauth2",
 			"template": "login_oauth2"
 		}
+	],
+	"settings": [
+		{
+			"type": "group",
+			"label": {
+				"en": "ZeroConf Wake",
+				"nl": "ZeroConf Wake"
+			},
+			"children": [
+				{
+					"id": "wake_host",
+					"type": "text",
+					"label": {
+						"en": "Wake Host (IP/hostname)",
+						"nl": "Wake Host (IP/hostnaam)"
+					},
+					"hint": {
+						"en": "Auto-detected during pairing if device is online. Manual: IP address or hostname (e.g. 192.168.1.100 or speaker.local)",
+						"nl": "Automatisch gedetecteerd bij koppelen als apparaat online is. Handmatig: IP-adres of hostnaam (bijv. 192.168.1.100 of speaker.local)"
+					},
+					"value": ""
+				},
+				{
+					"id": "wake_port",
+					"type": "number",
+					"label": {
+						"en": "Wake Port",
+						"nl": "Wake Poort"
+					},
+					"hint": {
+						"en": "Port number for ZeroConf API (default: 4070)",
+						"nl": "Poortnummer voor ZeroConf API (standaard: 4070)"
+					},
+					"value": 4070,
+					"min": 1,
+					"max": 65535
+				}
+			]
+		}
 	]
 }

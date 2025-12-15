@@ -47,6 +47,14 @@
     "wakeDevice": {
       "method": "POST",
       "path": "/wake-device"
+    },
+    "resetIdentity": {
+      "method": "POST",
+      "path": "/reset-identity"
+    },
+    "wakeDeviceByHost": {
+      "method": "POST",
+      "path": "/wake-device-by-host"
     }
   }
 }

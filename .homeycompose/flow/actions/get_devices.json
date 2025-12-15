@@ -1,0 +1,61 @@
+{
+  "title": {
+    "en": "Get available Spotify devices",
+    "nl": "Haal beschikbare Spotify apparaten op"
+  },
+  "hint": {
+    "en": "Returns a list of available Spotify Connect devices from your account.",
+    "nl": "Geeft een lijst van beschikbare Spotify Connect apparaten van je account terug."
+  },
+  "args": [],
+  "tokens": [
+    {
+      "name": "device_names",
+      "type": "string",
+      "title": {
+        "en": "Device names",
+        "nl": "Apparaatnamen"
+      },
+      "example": {
+        "en": "Living Room Speaker, Kitchen Display",
+        "nl": "Woonkamer Speaker, Keuken Display"
+      }
+    },
+    {
+      "name": "device_count",
+      "type": "number",
+      "title": {
+        "en": "Device count",
+        "nl": "Aantal apparaten"
+      },
+      "example": {
+        "en": "3",
+        "nl": "3"
+      }
+    },
+    {
+      "name": "active_device",
+      "type": "string",
+      "title": {
+        "en": "Active device",
+        "nl": "Actief apparaat"
+      },
+      "example": {
+        "en": "Living Room Speaker",
+        "nl": "Woonkamer Speaker"
+      }
+    },
+    {
+      "name": "device_ids",
+      "type": "string",
+      "title": {
+        "en": "Device IDs",
+        "nl": "Apparaat IDs"
+      },
+      "example": {
+        "en": "abc123,def456",
+        "nl": "abc123,def456"
+      }
+    }
+  ]
+}

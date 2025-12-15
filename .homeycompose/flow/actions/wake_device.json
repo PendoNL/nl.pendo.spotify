@@ -4,25 +4,36 @@
     "nl": "Activeer een Spotify apparaat"
   },
   "titleFormatted": {
-    "en": "Wake [[zeroconf_device]]",
-    "nl": "Activeer [[zeroconf_device]]"
+    "en": "Wake Spotify device at [[hostname]]:[[port]]",
+    "nl": "Activeer Spotify apparaat op [[hostname]]:[[port]]"
   },
   "hint": {
-    "en": "Wake a Spotify Connect device on your network using ZeroConf. Requires pairing first.",
-    "nl": "Activeer een Spotify Connect apparaat op je netwerk via ZeroConf. Vereist eerst koppeling."
+    "en": "Wake a Spotify Connect device on your network using ZeroConf. Enter the hostname (e.g. pendo.local) or IP address. Requires pairing first.",
+    "nl": "Activeer een Spotify Connect apparaat op je netwerk via ZeroConf. Voer de hostnaam (bijv. pendo.local) of IP-adres in. Vereist eerst koppeling."
   },
   "args": [
     {
-      "type": "autocomplete",
-      "name": "zeroconf_device",
+      "type": "text",
+      "name": "hostname",
       "title": {
-        "en": "Device",
-        "nl": "Apparaat"
+        "en": "Hostname / IP",
+        "nl": "Hostnaam / IP"
       },
       "placeholder": {
-        "en": "Select a device...",
-        "nl": "Selecteer een apparaat..."
+        "en": "e.g. pendo.local or 192.168.1.100",
+        "nl": "bijv. pendo.local of 192.168.1.100"
       }
+    },
+    {
+      "type": "number",
+      "name": "port",
+      "title": {
+        "en": "Port",
+        "nl": "Poort"
+      },
+      "value": 4070,
+      "min": 1,
+      "max": 65535
     }
   ]
 }

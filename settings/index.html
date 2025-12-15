@@ -46,6 +46,7 @@
 
 <button id="start-pairing" class="homey-button-primary-full">Start Pairing Mode</button>
 <button id="stop-pairing" class="homey-button-secondary-full" style="margin-top: 8px; display: none;">Stop Pairing Mode</button>
+<button id="reset-identity" class="homey-button-secondary-full" style="margin-top: 8px;">Reset Device Identity</button>
 
 <p id="pairing-instructions" style="margin-top: 16px; padding: 12px; background: #f5f5f5; border-radius: 4px; display: none;">
     <strong>Pairing Active!</strong><br>
@@ -131,6 +132,16 @@
                         pairingStatus.innerHTML = '<span style="color: green;">&#10003;</span> Paired as: ' + creds.userName;
                     }
                 });
+            });
+        });
+
+        var resetIdentityBtn = document.getElementById("reset-identity");
+        resetIdentityBtn.addEventListener("click", function () {
+            if (!confirm("This will clear all stored credentials and generate a new device ID. Continue?")) return;
+            Homey.api("POST", "/reset-identity", {}, function (err, result) {
+                if (err) return Homey.alert("Failed to reset: " + err);
+                pairingStatus.innerHTML = '<span style="color: orange;">&#9888;</span> Not paired yet (identity reset)';
+                Homey.alert("Device identity reset. Start pairing mode to pair again.");
             });
         });
     }

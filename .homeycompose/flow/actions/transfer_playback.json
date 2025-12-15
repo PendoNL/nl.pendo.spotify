@@ -1,0 +1,28 @@
+{
+  "title": {
+    "en": "Transfer playback",
+    "nl": "Verplaats afspelen"
+  },
+  "titleFormatted": {
+    "en": "Transfer playback to [[device]]",
+    "nl": "Verplaats afspelen naar [[device]]"
+  },
+  "hint": {
+    "en": "Transfer Spotify playback to a Spotify Connect device on your account.",
+    "nl": "Verplaats Spotify afspelen naar een Spotify Connect apparaat op je account."
+  },
+  "args": [
+    {
+      "type": "autocomplete",
+      "name": "device",
+      "title": {
+        "en": "Device",
+        "nl": "Apparaat"
+      },
+      "placeholder": {
+        "en": "Search for a device...",
+        "nl": "Zoek een apparaat..."
+      }
+    }
+  ]
+}
