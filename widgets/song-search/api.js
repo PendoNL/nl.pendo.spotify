@@ -3,7 +3,8 @@
 module.exports = {
   async search({ homey, body }) {
     try {
-      const { query, deviceId } = body;
+      const { query: rawQuery, deviceId } = body;
+      const query = typeof rawQuery === 'string' ? rawQuery.trim() : '';
 
       homey.app.log(`Widget search: query="${query}", deviceId="${deviceId}"`);
 
@@ -31,7 +32,16 @@ module.exports = {
       homey.app.log(`Using device: ${device.getName()}`);
 
       // Search all types at once
-      const results = await device.oAuth2Client.search(query, 'track,artist,album,playlist', 20);
+      let results;
+      try {
+        results = await device.oAuth2Client.search(query, 'track,artist,album,playlist', 20);
+      } catch (err) {
+        if (err.status === 400) {
+          homey.app.log(`Widget search: Spotify rejected query="${query}" with 400`);
+          return [];
+        }
+        throw err;
+      }
 
       const items = [];
 
