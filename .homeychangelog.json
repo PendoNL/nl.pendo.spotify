@@ -28,5 +28,8 @@
   },
   "1.3.1": {
     "en": "Adds add song to queue card"
+  },
+  "1.3.2": {
+    "en": "Tried to improve search stability"
   }
 }
