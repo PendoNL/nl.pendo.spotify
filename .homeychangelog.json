@@ -34,5 +34,8 @@
   },
   "1.3.3": {
     "en": "Adds market parameter to search"
+  },
+  "1.3.4": {
+    "en": "Decreased search limit from 20 to 10 to match Spotifys new policy"
   }
 }
