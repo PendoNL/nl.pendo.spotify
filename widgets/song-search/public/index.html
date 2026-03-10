@@ -128,6 +128,62 @@
       .playing {
         background-color: var(--homey-color-primary-100);
       }
+
+      .type-filters {
+        display: flex;
+        gap: var(--homey-su-1);
+      }
+
+      .type-filter {
+        flex: 1;
+        padding: var(--homey-su-1) var(--homey-su-2);
+        border: 1px solid var(--homey-color-mono-300);
+        border-radius: var(--homey-border-radius);
+        background-color: var(--homey-color-mono-100);
+        color: var(--homey-text-color);
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        cursor: pointer;
+        text-align: center;
+        transition: background-color 0.15s ease, border-color 0.15s ease;
+      }
+
+      .type-filter:hover {
+        background-color: var(--homey-color-mono-200);
+      }
+
+      .type-filter.active {
+        border-color: transparent;
+        color: white;
+      }
+
+      .type-filter[data-type="all"].active { background-color: #555; }
+      .type-filter[data-type="track"].active { background-color: #1DB954; }
+      .type-filter[data-type="artist"].active { background-color: #9B59B6; }
+      .type-filter[data-type="album"].active { background-color: #3498DB; }
+      .type-filter[data-type="playlist"].active { background-color: #E67E22; }
+
+      .load-more {
+        padding: var(--homey-su-2);
+        border: 1px solid var(--homey-color-mono-300);
+        border-radius: var(--homey-border-radius);
+        background-color: var(--homey-color-mono-100);
+        color: var(--homey-text-color);
+        font-size: var(--homey-font-size-small);
+        cursor: pointer;
+        text-align: center;
+        transition: background-color 0.15s ease;
+      }
+
+      .load-more:hover {
+        background-color: var(--homey-color-mono-200);
+      }
+
+      .load-more:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
     </style>
   </head>
 
@@ -146,6 +202,14 @@
       >
     </div>
 
+    <div class="type-filters" id="typeFilters">
+      <button class="type-filter active" data-type="all">All</button>
+      <button class="type-filter" data-type="track">Tracks</button>
+      <button class="type-filter" data-type="artist">Artists</button>
+      <button class="type-filter" data-type="album">Albums</button>
+      <button class="type-filter" data-type="playlist">Playlists</button>
+    </div>
+
     <div class="results" id="results">
       <div class="message" id="message">Type to search Spotify</div>
     </div>
@@ -153,11 +217,14 @@
     <script type="text/javascript">
       let searchTimeout;
       let deviceId = null;
+      let currentOffset = 0;
+      let currentQuery = '';
+      let currentType = 'all';
+      let isLoading = false;
 
       function onHomeyReady(Homey) {
         Homey.ready();
 
-        // Get device IDs from widget device selector
         const deviceIds = Homey.getDeviceIds();
         deviceId = deviceIds && deviceIds.length > 0 ? deviceIds[0] : null;
 
@@ -171,82 +238,149 @@
           return;
         }
 
+        function createResultItem(item) {
+          const div = document.createElement('div');
+          div.className = 'song-item';
+
+          const img = document.createElement('img');
+          img.className = 'song-image';
+          img.src = item.image || '';
+          img.alt = '';
+          img.onerror = () => { img.style.display = 'none'; };
+
+          const info = document.createElement('div');
+          info.className = 'song-info';
+
+          const name = document.createElement('div');
+          name.className = 'song-name';
+          name.textContent = item.name;
+
+          const subtitle = document.createElement('div');
+          subtitle.className = 'song-artist';
+          subtitle.textContent = item.subtitle;
+
+          info.appendChild(name);
+          info.appendChild(subtitle);
+
+          const badge = document.createElement('span');
+          badge.className = 'type-badge type-' + item.type;
+          badge.textContent = item.type;
+
+          div.appendChild(img);
+          div.appendChild(info);
+          div.appendChild(badge);
+
+          div.addEventListener('click', () => {
+            div.classList.add('playing');
+            Homey.api('POST', '/play', { deviceId, uri: item.uri, type: item.type })
+              .then(() => {
+                setTimeout(() => div.classList.remove('playing'), 1000);
+              })
+              .catch((err) => {
+                div.classList.remove('playing');
+                console.error('Play error:', err);
+              });
+          });
+
+          return div;
+        }
+
+        function removeLoadMoreButton() {
+          const existing = resultsDiv.querySelector('.load-more');
+          if (existing) existing.remove();
+        }
+
+        function getTypeParam() {
+          return currentType === 'all' ? 'track,artist,album,playlist' : currentType;
+        }
+
+        function doSearch(query, offset, append) {
+          if (isLoading) return;
+          isLoading = true;
+
+          if (!append) {
+            resultsDiv.innerHTML = '<div class="message">Searching...</div>';
+          } else {
+            const btn = resultsDiv.querySelector('.load-more');
+            if (btn) {
+              btn.disabled = true;
+              btn.textContent = 'Loading...';
+            }
+          }
+
+          Homey.api('POST', '/search', { query, deviceId, offset, type: getTypeParam() })
+            .then((response) => {
+              const items = response.items || [];
+              const hasMore = response.hasMore || false;
+
+              if (!append) {
+                resultsDiv.innerHTML = '';
+              } else {
+                removeLoadMoreButton();
+              }
+
+              if (items.length === 0 && !append) {
+                resultsDiv.innerHTML = '<div class="message">No results found</div>';
+                return;
+              }
+
+              items.forEach(item => {
+                resultsDiv.appendChild(createResultItem(item));
+              });
+
+              currentOffset = offset + 10;
+
+              if (hasMore) {
+                const btn = document.createElement('button');
+                btn.className = 'load-more';
+                btn.textContent = 'Load more';
+                btn.addEventListener('click', () => {
+                  doSearch(currentQuery, currentOffset, true);
+                });
+                resultsDiv.appendChild(btn);
+              }
+            })
+            .catch((err) => {
+              console.error('Search error:', err);
+              if (!append) {
+                resultsDiv.innerHTML = '<div class="message">Search failed</div>';
+              } else {
+                removeLoadMoreButton();
+              }
+            })
+            .finally(() => {
+              isLoading = false;
+            });
+        }
+
         searchInput.addEventListener('input', (event) => {
           clearTimeout(searchTimeout);
           const query = event.target.value.trim();
 
           if (query.length < 2) {
+            currentQuery = '';
+            currentOffset = 0;
             resultsDiv.innerHTML = '<div class="message">Type to search Spotify</div>';
             return;
           }
 
-          resultsDiv.innerHTML = '<div class="message">Searching...</div>';
-
           searchTimeout = setTimeout(() => {
-            Homey.api('POST', '/search', { query, deviceId })
-              .then((results) => {
-                if (results.length === 0) {
-                  resultsDiv.innerHTML = '<div class="message">No songs found</div>';
-                  return;
-                }
-
-                resultsDiv.innerHTML = '';
-
-                results.forEach(item => {
-                  const div = document.createElement('div');
-                  div.className = 'song-item';
-
-                  const img = document.createElement('img');
-                  img.className = 'song-image';
-                  img.src = item.image || '';
-                  img.alt = '';
-                  img.onerror = () => { img.style.display = 'none'; };
-
-                  const info = document.createElement('div');
-                  info.className = 'song-info';
-
-                  const name = document.createElement('div');
-                  name.className = 'song-name';
-                  name.textContent = item.name;
-
-                  const subtitle = document.createElement('div');
-                  subtitle.className = 'song-artist';
-                  subtitle.textContent = item.subtitle;
-
-                  info.appendChild(name);
-                  info.appendChild(subtitle);
-
-                  const badge = document.createElement('span');
-                  badge.className = 'type-badge type-' + item.type;
-                  badge.textContent = item.type;
-
-                  div.appendChild(img);
-                  div.appendChild(info);
-                  div.appendChild(badge);
-
-                  div.addEventListener('click', () => {
-                    div.classList.add('playing');
-
-                    Homey.api('POST', '/play', { deviceId, uri: item.uri, type: item.type })
-                      .then(() => {
-                        setTimeout(() => {
-                          div.classList.remove('playing');
-                        }, 1000);
-                      })
-                      .catch((err) => {
-                        div.classList.remove('playing');
-                        console.error('Play error:', err);
-                      });
-                  });
-
-                  resultsDiv.appendChild(div);
-                });
-              })
-              .catch((err) => {
-                console.error('Search error:', err);
-                resultsDiv.innerHTML = '<div class="message">Search failed</div>';
-              });
+            currentQuery = query;
+            currentOffset = 0;
+            doSearch(query, 0, false);
           }, 300);
+        });
+
+        document.querySelectorAll('.type-filter').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.type-filter').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentType = btn.dataset.type;
+            currentOffset = 0;
+            if (currentQuery.length >= 2) {
+              doSearch(currentQuery, 0, false);
+            }
+          });
         });
       }
     </script>

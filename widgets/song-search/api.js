@@ -3,10 +3,12 @@
 module.exports = {
   async search({ homey, body }) {
     try {
-      const { query: rawQuery, deviceId } = body;
+      const { query: rawQuery, deviceId, offset: rawOffset, type: rawType } = body;
       const query = typeof rawQuery === 'string' ? rawQuery.trim() : '';
+      const offset = parseInt(rawOffset, 10) || 0;
+      const type = typeof rawType === 'string' && rawType ? rawType : 'track,artist,album,playlist';
 
-      homey.app.log(`Widget search: query="${query}", deviceId="${deviceId}"`);
+      homey.app.log(`Widget search: query="${query}", type="${type}", deviceId="${deviceId}", offset=${offset}`);
 
       if (!query || query.length < 2) {
         return [];
@@ -34,7 +36,7 @@ module.exports = {
       // Search all types at once
       let results;
       try {
-        results = await device.oAuth2Client.search(query, 'track,artist,album,playlist', 10);
+        results = await device.oAuth2Client.search(query, type, 10, offset);
       } catch (err) {
         if (err.status === 400) {
           homey.app.log(`Widget search: Spotify rejected query="${query}" with 400`);
@@ -48,10 +50,11 @@ module.exports = {
       }
 
       const items = [];
+      let hasMore = false;
 
       // Add tracks
       if (results.tracks?.items) {
-        results.tracks.items.slice(0, 5).forEach(track => {
+        results.tracks.items.forEach(track => {
           items.push({
             type: 'track',
             name: track.name,
@@ -60,11 +63,12 @@ module.exports = {
             uri: track.uri
           });
         });
+        if (results.tracks.next) hasMore = true;
       }
 
       // Add artists
       if (results.artists?.items) {
-        results.artists.items.slice(0, 3).forEach(artist => {
+        results.artists.items.forEach(artist => {
           items.push({
             type: 'artist',
             name: artist.name,
@@ -73,11 +77,12 @@ module.exports = {
             uri: artist.uri
           });
         });
+        if (results.artists.next) hasMore = true;
       }
 
       // Add albums
       if (results.albums?.items) {
-        results.albums.items.slice(0, 3).forEach(album => {
+        results.albums.items.forEach(album => {
           items.push({
             type: 'album',
             name: album.name,
@@ -86,11 +91,12 @@ module.exports = {
             uri: album.uri
           });
         });
+        if (results.albums.next) hasMore = true;
       }
 
       // Add playlists
       if (results.playlists?.items) {
-        results.playlists.items.filter(p => p !== null).slice(0, 3).forEach(playlist => {
+        results.playlists.items.filter(p => p !== null).forEach(playlist => {
           items.push({
             type: 'playlist',
             name: playlist.name,
@@ -99,9 +105,10 @@ module.exports = {
             uri: playlist.uri
           });
         });
+        if (results.playlists.next) hasMore = true;
       }
 
-      return items;
+      return { items, hasMore };
     } catch (error) {
       homey.app.error(`Widget search error: ${error.message}`, error);
       throw error;
