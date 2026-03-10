@@ -40,5 +40,8 @@
   },
   "1.4.0": {
     "en": "Added search type filter and option to load more results"
+  },
+  "1.4.1": {
+    "en": "Add search filters and load more option in the widget"
   }
 }
