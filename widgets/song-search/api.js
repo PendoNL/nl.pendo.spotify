@@ -34,11 +34,15 @@ module.exports = {
       // Search all types at once
       let results;
       try {
-        results = await device.oAuth2Client.search(query, 'track,artist,album,playlist', 20);
+        results = await device.oAuth2Client.search(query, 'track,artist,album,playlist', 10);
       } catch (err) {
         if (err.status === 400) {
           homey.app.log(`Widget search: Spotify rejected query="${query}" with 400`);
           return [];
+        }
+        if (err.status === 403) {
+          homey.app.error(`Widget search: Spotify returned 403 Forbidden. The user may not be allowlisted in the Spotify Developer Dashboard (dev mode is limited to 5 users).`);
+          throw new Error('Spotify access denied. The app owner may need to allowlist your Spotify account in the Developer Dashboard.');
         }
         throw err;
       }
