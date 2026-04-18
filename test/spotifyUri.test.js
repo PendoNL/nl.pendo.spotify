@@ -82,3 +82,33 @@ test('buildDidlMetadata: escapes XML characters in id (defence)', () => {
 	assert.doesNotMatch(meta, /&(?!amp;|lt;|gt;|quot;|apos;)/); // no unescaped ampersand
 	assert.doesNotMatch(meta, /<c>/);
 });
+
+const { combinePlayMode } = require('../lib/helpers/spotifyUri');
+
+test('combinePlayMode: no shuffle, no repeat → NORMAL', () => {
+	assert.equal(combinePlayMode(false, 'none'), 'NORMAL');
+});
+
+test('combinePlayMode: no shuffle, repeat track → REPEAT_ONE', () => {
+	assert.equal(combinePlayMode(false, 'track'), 'REPEAT_ONE');
+});
+
+test('combinePlayMode: no shuffle, repeat playlist → REPEAT_ALL', () => {
+	assert.equal(combinePlayMode(false, 'playlist'), 'REPEAT_ALL');
+});
+
+test('combinePlayMode: shuffle, no repeat → SHUFFLE_NOREPEAT', () => {
+	assert.equal(combinePlayMode(true, 'none'), 'SHUFFLE_NOREPEAT');
+});
+
+test('combinePlayMode: shuffle, repeat playlist → SHUFFLE', () => {
+	assert.equal(combinePlayMode(true, 'playlist'), 'SHUFFLE');
+});
+
+test('combinePlayMode: shuffle, repeat track → SHUFFLE_REPEAT_ONE', () => {
+	assert.equal(combinePlayMode(true, 'track'), 'SHUFFLE_REPEAT_ONE');
+});
+
+test('combinePlayMode: rejects unknown repeat value', () => {
+	assert.throws(() => combinePlayMode(false, 'invalid'), /unknown repeat/i);
+});
