@@ -129,7 +129,7 @@ module.exports = class SpotifySonosDevice extends OAuth2Device {
 		this.setCapabilityValue('volume_set', snap.volume).catch(this.error);
 		this.setCapabilityValue('volume_mute', snap.muted).catch(this.error);
 
-		if (snap.albumArtUrl) {
+		if (snap.albumArtUrl && snap.albumArtUrl.startsWith('https://')) {
 			this.image.setUrl(snap.albumArtUrl);
 			this.image.update().catch(this.error);
 		}
