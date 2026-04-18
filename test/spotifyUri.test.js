@@ -50,3 +50,35 @@ test('parseSpotifyUri: rejects non-spotify', () => {
 test('parseSpotifyUri: rejects unknown kind', () => {
 	assert.throws(() => parseSpotifyUri('spotify:episode:abc'), /unsupported spotify kind/i);
 });
+
+const { buildDidlMetadata } = require('../lib/helpers/spotifyUri');
+
+test('buildDidlMetadata: track returns empty string', () => {
+	const meta = buildDidlMetadata({ kind: 'track', id: '4iV5W9uYEdYUVa79Axb7Rh' });
+	assert.equal(meta, '');
+});
+
+test('buildDidlMetadata: album wraps id in DIDL-Lite with class object.container.album.musicAlbum', () => {
+	const meta = buildDidlMetadata({ kind: 'album', id: '1DFixLWuPkv3KT3TnV35m3' });
+	assert.match(meta, /<DIDL-Lite[^>]*>/);
+	assert.match(meta, /spotify:album:1DFixLWuPkv3KT3TnV35m3/);
+	assert.match(meta, /object\.container\.album\.musicAlbum/);
+});
+
+test('buildDidlMetadata: playlist wraps in object.container.playlistContainer', () => {
+	const meta = buildDidlMetadata({ kind: 'playlist', id: '37i9dQZF1DXcBWIGoYBM5M' });
+	assert.match(meta, /spotify:playlist:37i9dQZF1DXcBWIGoYBM5M/);
+	assert.match(meta, /object\.container\.playlistContainer/);
+});
+
+test('buildDidlMetadata: artist wraps in object.container.person.musicArtist', () => {
+	const meta = buildDidlMetadata({ kind: 'artist', id: '4Z8W4fKeB5YxbusRsdQVPb' });
+	assert.match(meta, /spotify:artist:4Z8W4fKeB5YxbusRsdQVPb/);
+	assert.match(meta, /object\.container\.person\.musicArtist/);
+});
+
+test('buildDidlMetadata: escapes XML characters in id (defence)', () => {
+	const meta = buildDidlMetadata({ kind: 'album', id: 'a&b<c>"d' });
+	assert.doesNotMatch(meta, /&(?!amp;|lt;|gt;|quot;|apos;)/); // no unescaped ampersand
+	assert.doesNotMatch(meta, /<c>/);
+});
