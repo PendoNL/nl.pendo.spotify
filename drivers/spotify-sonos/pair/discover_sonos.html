@@ -103,7 +103,7 @@
 				rescanBtn.disabled = true;
 				rescanBtn.textContent = 'Scanning…';
 				try {
-					const devices = await Homey.emit('sonos:discover');
+					const devices = await Homey.emit('sonos_discover');
 					(devices || []).forEach(renderDevice);
 					if ((devices || []).length === 0) emptyEl.style.display = 'block';
 				} catch (err) {
@@ -120,7 +120,7 @@
 				errEl.textContent = '';
 				manualAddBtn.disabled = true;
 				try {
-					const device = await Homey.emit('sonos:validate_ip', ip);
+					const device = await Homey.emit('sonos_validate_ip', ip);
 					renderDevice(device);
 					manualIp.value = '';
 				} catch (err) {
@@ -133,7 +133,7 @@
 			rescanBtn.addEventListener('click', scan);
 
 			continueBtn.addEventListener('click', async () => {
-				await Homey.emit('sonos:pick', Array.from(picked.values()));
+				await Homey.emit('sonos_pick', Array.from(picked.values()));
 				Homey.nextView();
 			});
 
