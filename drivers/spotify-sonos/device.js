@@ -27,8 +27,8 @@ module.exports = class SpotifySonosDevice extends OAuth2Device {
 	}
 
 	async onOAuth2Deleted() {
-		await super.onOAuth2Deleted();
 		if (this.syncInterval) clearInterval(this.syncInterval);
+		await super.onOAuth2Deleted();
 	}
 
 	async _createAlbumArtImage() {

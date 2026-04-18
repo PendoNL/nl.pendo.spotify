@@ -64,9 +64,19 @@
 
 				const cb = document.createElement('input');
 				cb.type = 'checkbox';
+				if (picked.has(key)) {
+					cb.checked = true;
+					row.classList.add('selected');
+				}
 
 				const label = document.createElement('div');
-				label.innerHTML = `<strong>${device.name}</strong><div class="muted">${device.ip}</div>`;
+				const strong = document.createElement('strong');
+				strong.textContent = device.name;
+				const ipDiv = document.createElement('div');
+				ipDiv.className = 'muted';
+				ipDiv.textContent = device.ip;
+				label.appendChild(strong);
+				label.appendChild(ipDiv);
 
 				row.appendChild(cb);
 				row.appendChild(label);
