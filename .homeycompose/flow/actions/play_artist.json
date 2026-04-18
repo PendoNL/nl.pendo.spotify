@@ -11,7 +11,7 @@
     {
       "type": "device",
       "name": "device",
-      "filter": "driver_id=spotify-connect"
+      "filter": "driver_id=spotify-connect|spotify-sonos"
     },
     {
       "type": "autocomplete",
