@@ -12,169 +12,122 @@ module.exports = class SpotifyApp extends OAuth2App {
 	async onInit() {
 		await super.onInit();
 
-		const playSongCard = this.homey.flow.getActionCard('play_song');
+		this._registerPlaySong();
+		this._registerPlayArtist();
+		this._registerPlayPlaylist();
+		this._registerPlayAlbum();
+		this._registerAddToQueue();
+		this._registerGetPlaybackInfo();
+	}
 
-		// Autocomplete: search Spotify when user types
-		playSongCard.registerArgumentAutocompleteListener('song', async (query, args) => {
+	_registerPlaySong() {
+		const card = this.homey.flow.getActionCard('play_song');
+
+		card.registerArgumentAutocompleteListener('song', async (query, args) => {
 			if (!query || query.length < 2) return [];
-
-			const oAuth2Client = args.device.oAuth2Client;
-			const results = await oAuth2Client.search(query, 'track', 10);
-
+			const results = await args.device.oAuth2Client.search(query, 'track', 10);
 			return results.tracks.items.map(track => ({
 				name: track.name,
 				description: track.artists.map(a => a.name).join(', '),
 				image: track.album.images[2]?.url,
 				id: track.id,
-				uri: track.uri
+				uri: track.uri,
 			}));
 		});
 
-		// Run: play the selected song (queue + skip to avoid single-track loop)
-		playSongCard.registerRunListener(async (args) => {
-			const { device, song } = args;
-			await device.oAuth2Client.addToQueueAndSkip(device._id, song.uri);
-		});
+		card.registerRunListener(async ({ device, song }) => device.playTrack(song.uri));
+	}
 
-		// Play Artist card
-		const playArtistCard = this.homey.flow.getActionCard('play_artist');
+	_registerPlayArtist() {
+		const card = this.homey.flow.getActionCard('play_artist');
 
-		playArtistCard.registerArgumentAutocompleteListener('artist', async (query, args) => {
+		card.registerArgumentAutocompleteListener('artist', async (query, args) => {
 			if (!query || query.length < 2) return [];
-
-			const oAuth2Client = args.device.oAuth2Client;
-			const results = await oAuth2Client.search(query, 'artist', 10);
-
+			const results = await args.device.oAuth2Client.search(query, 'artist', 10);
 			return results.artists.items.map(artist => ({
 				name: artist.name,
 				description: `${artist.followers?.total?.toLocaleString() || 0} followers`,
 				image: artist.images[2]?.url,
 				id: artist.id,
-				uri: artist.uri
+				uri: artist.uri,
 			}));
 		});
 
-		playArtistCard.registerRunListener(async (args) => {
-			const { device, artist } = args;
-			await device.oAuth2Client.playContext(device._id, artist.uri);
-		});
+		card.registerRunListener(async ({ device, artist }) => device.playContext(artist.uri));
+	}
 
-		// Play Playlist card
-		const playPlaylistCard = this.homey.flow.getActionCard('play_playlist');
+	_registerPlayPlaylist() {
+		const card = this.homey.flow.getActionCard('play_playlist');
 
-		playPlaylistCard.registerArgumentAutocompleteListener('playlist', async (query, args) => {
-			const oAuth2Client = args.device.oAuth2Client;
-			const results = await oAuth2Client.getMyPlaylists(50);
-
-			const queryLower = (query || '').toLowerCase();
-
+		card.registerArgumentAutocompleteListener('playlist', async (query, args) => {
+			const results = await args.device.oAuth2Client.getMyPlaylists(50);
+			const q = (query || '').toLowerCase();
 			return results.items
-				.filter(playlist => playlist !== null)
-				.filter(playlist => !query || playlist.name.toLowerCase().includes(queryLower))
-				.map(playlist => ({
-					name: playlist.name,
-					description: `${playlist.tracks?.total || 0} tracks`,
-					image: playlist.images?.[0]?.url,
-					id: playlist.id,
-					uri: playlist.uri
+				.filter(p => p !== null)
+				.filter(p => !query || p.name.toLowerCase().includes(q))
+				.map(p => ({
+					name: p.name,
+					description: `${p.tracks?.total || 0} tracks`,
+					image: p.images?.[0]?.url,
+					id: p.id,
+					uri: p.uri,
 				}));
 		});
 
-		playPlaylistCard.registerRunListener(async (args) => {
-			const { device, playlist } = args;
-			await device.oAuth2Client.playContext(device._id, playlist.uri);
-		});
+		card.registerRunListener(async ({ device, playlist }) => device.playContext(playlist.uri));
+	}
 
-		// Play Album card
-		const playAlbumCard = this.homey.flow.getActionCard('play_album');
+	_registerPlayAlbum() {
+		const card = this.homey.flow.getActionCard('play_album');
 
-		playAlbumCard.registerArgumentAutocompleteListener('album', async (query, args) => {
+		card.registerArgumentAutocompleteListener('album', async (query, args) => {
 			if (!query || query.length < 2) return [];
-
-			const oAuth2Client = args.device.oAuth2Client;
-			const results = await oAuth2Client.search(query, 'album', 10);
-
+			const results = await args.device.oAuth2Client.search(query, 'album', 10);
 			return results.albums.items.map(album => ({
 				name: album.name,
 				description: album.artists.map(a => a.name).join(', '),
 				image: album.images[2]?.url,
 				id: album.id,
-				uri: album.uri
+				uri: album.uri,
 			}));
 		});
 
-		playAlbumCard.registerRunListener(async (args) => {
-			const { device, album } = args;
-			await device.oAuth2Client.playContext(device._id, album.uri);
-		});
+		card.registerRunListener(async ({ device, album }) => device.playContext(album.uri));
+	}
 
-		// Add to Queue card
-		const addToQueueCard = this.homey.flow.getActionCard('add_to_queue');
+	_registerAddToQueue() {
+		const card = this.homey.flow.getActionCard('add_to_queue');
 
-		addToQueueCard.registerArgumentAutocompleteListener('song', async (query, args) => {
+		card.registerArgumentAutocompleteListener('song', async (query, args) => {
 			if (!query || query.length < 2) return [];
-
-			const oAuth2Client = args.device.oAuth2Client;
-			const results = await oAuth2Client.search(query, 'track', 10);
-
+			const results = await args.device.oAuth2Client.search(query, 'track', 10);
 			return results.tracks.items.map(track => ({
 				name: track.name,
 				description: track.artists.map(a => a.name).join(', '),
 				image: track.album.images[2]?.url,
 				id: track.id,
-				uri: track.uri
+				uri: track.uri,
 			}));
 		});
 
-		addToQueueCard.registerRunListener(async (args) => {
-			const { device, song } = args;
-			try {
-				await device.oAuth2Client.addToQueue(device._id, song.uri);
-			} catch (error) {
-				// Queue API requires active playback - fall back to direct play
-				if (error.status === 404 || error.statusCode === 404) {
-					await device.oAuth2Client.playTrack(device._id, song.uri);
-				} else {
-					throw error;
-				}
-			}
-		});
+		card.registerRunListener(async ({ device, song }) => device.addToQueue(song.uri));
+	}
 
-		// Get Playback Info card
-		const getPlaybackInfoCard = this.homey.flow.getActionCard('get_playback_info');
+	_registerGetPlaybackInfo() {
+		const card = this.homey.flow.getActionCard('get_playback_info');
 
-		getPlaybackInfoCard.registerRunListener(async (args) => {
-			const { device } = args;
-			const state = await device.oAuth2Client.state();
-
-			if (!state || !state.item) {
-				return {
-					track_name: '',
-					artist_name: '',
-					album_name: '',
-					progress_seconds: 0,
-					duration_seconds: 0,
-					progress_percent: 0,
-					is_playing: false
-				};
-			}
-
-			const progressMs = state.progress_ms || 0;
-			const durationMs = state.item.duration_ms || 0;
-			const progressSeconds = Math.round(progressMs / 1000);
-			const durationSeconds = Math.round(durationMs / 1000);
-			const progressPercent = durationMs > 0 ? Math.round((progressMs / durationMs) * 100) : 0;
-
+		card.registerRunListener(async ({ device }) => {
+			const info = await device.getPlaybackInfo();
 			return {
-				track_name: state.item.name || '',
-				artist_name: state.item.artists?.map(a => a.name).join(', ') || '',
-				album_name: state.item.album?.name || '',
-				progress_seconds: progressSeconds,
-				duration_seconds: durationSeconds,
-				progress_percent: progressPercent,
-				is_playing: state.is_playing || false
+				track_name: info.trackName,
+				artist_name: info.artistName,
+				album_name: info.albumName,
+				progress_seconds: info.progressSeconds,
+				duration_seconds: info.durationSeconds,
+				progress_percent: info.progressPercent,
+				is_playing: info.isPlaying,
 			};
 		});
 	}
 
-}
+};
