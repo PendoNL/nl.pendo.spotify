@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style>
+		.wrap { padding: 16px; font-family: sans-serif; }
+		.actions { margin-top: 12px; }
+		.device { padding: 12px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+		.device.selected { border-color: #1DB954; background: #e7f7ec; }
+		.device input { margin: 0; }
+		.muted { color: #666; font-size: 12px; }
+		.row { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+		input[type="text"] { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+		button { padding: 8px 14px; border-radius: 4px; border: 1px solid #1DB954; background: #1DB954; color: white; cursor: pointer; }
+		button:disabled { opacity: 0.5; cursor: default; }
+		.secondary { background: white; color: #333; border-color: #ccc; }
+		.error { color: #c00; font-size: 13px; margin-top: 8px; }
+	</style>
+</head>
+<body>
+	<div class="wrap">
+		<h2 data-i18n="pair.discover_sonos.title">Find your Sonos speakers</h2>
+		<p class="muted" data-i18n="pair.discover_sonos.subtitle">Make sure your Sonos speakers are powered on and connected to the same Wi-Fi network as Homey.</p>
+
+		<div id="list"></div>
+		<div id="empty" class="muted" style="display:none;">No Sonos speakers found on the network.</div>
+
+		<div class="row">
+			<input type="text" id="manualIp" placeholder="Enter IP address manually (e.g. 192.168.1.42)" />
+			<button class="secondary" id="manualAddBtn">Add</button>
+		</div>
+		<div class="error" id="error"></div>
+
+		<div class="actions row">
+			<button class="secondary" id="rescanBtn">Re-scan</button>
+			<button id="continueBtn" disabled>Continue</button>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		let picked = new Map();
+
+		function onHomeyReady(Homey) {
+			Homey.ready();
+
+			const listEl = document.getElementById('list');
+			const emptyEl = document.getElementById('empty');
+			const errEl = document.getElementById('error');
+			const continueBtn = document.getElementById('continueBtn');
+			const rescanBtn = document.getElementById('rescanBtn');
+			const manualIp = document.getElementById('manualIp');
+			const manualAddBtn = document.getElementById('manualAddBtn');
+
+			function refreshContinueState() {
+				continueBtn.disabled = picked.size === 0;
+			}
+
+			function renderDevice(device) {
+				const key = device.uuid;
+				if (document.querySelector(`[data-uuid="${key}"]`)) return;
+
+				const row = document.createElement('div');
+				row.className = 'device';
+				row.dataset.uuid = key;
+
+				const cb = document.createElement('input');
+				cb.type = 'checkbox';
+
+				const label = document.createElement('div');
+				label.innerHTML = `<strong>${device.name}</strong><div class="muted">${device.ip}</div>`;
+
+				row.appendChild(cb);
+				row.appendChild(label);
+
+				row.addEventListener('click', (e) => {
+					if (e.target !== cb) cb.checked = !cb.checked;
+					if (cb.checked) {
+						picked.set(key, device);
+						row.classList.add('selected');
+					} else {
+						picked.delete(key);
+						row.classList.remove('selected');
+					}
+					refreshContinueState();
+				});
+
+				listEl.appendChild(row);
+			}
+
+			async function scan() {
+				listEl.innerHTML = '';
+				emptyEl.style.display = 'none';
+				errEl.textContent = '';
+				rescanBtn.disabled = true;
+				rescanBtn.textContent = 'Scanning…';
+				try {
+					const devices = await Homey.emit('sonos:discover');
+					(devices || []).forEach(renderDevice);
+					if ((devices || []).length === 0) emptyEl.style.display = 'block';
+				} catch (err) {
+					errEl.textContent = `Scan failed: ${err.message || err}`;
+				} finally {
+					rescanBtn.disabled = false;
+					rescanBtn.textContent = 'Re-scan';
+				}
+			}
+
+			manualAddBtn.addEventListener('click', async () => {
+				const ip = manualIp.value.trim();
+				if (!ip) return;
+				errEl.textContent = '';
+				manualAddBtn.disabled = true;
+				try {
+					const device = await Homey.emit('sonos:validate_ip', ip);
+					renderDevice(device);
+					manualIp.value = '';
+				} catch (err) {
+					errEl.textContent = `Could not reach speaker at ${ip}: ${err.message || err}`;
+				} finally {
+					manualAddBtn.disabled = false;
+				}
+			});
+
+			rescanBtn.addEventListener('click', scan);
+
+			continueBtn.addEventListener('click', async () => {
+				await Homey.emit('sonos:pick', Array.from(picked.values()));
+				Homey.nextView();
+			});
+
+			scan();
+		}
+	</script>
+</body>
+</html>
