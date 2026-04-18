@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
   "dependencies": {
     "homey-oauth2app": "^3.5.7"
   }
