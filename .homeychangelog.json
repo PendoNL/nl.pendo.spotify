@@ -1,4 +1,7 @@
 {
+  "1.5.0": {
+    "en": "Added Sonos driver for direct Spotify playback via UPnP. Works alongside the existing Spotify Connect driver."
+  },
   "4.0.0": {
     "en": "Apps SDK v3"
   },
