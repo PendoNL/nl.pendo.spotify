@@ -125,6 +125,32 @@ module.exports = class SpotifyConnectDevice extends OAuth2Device {
 	}
 
 	/*
+		Common contract (matches spotify-sonos device)
+	*/
+	async playTrack(uri) {
+		return this.oAuth2Client.addToQueueAndSkip(this._id, uri);
+	}
+
+	async playContext(uri) {
+		return this.oAuth2Client.playContext(this._id, uri);
+	}
+
+	async addToQueue(uri) {
+		try {
+			return await this.oAuth2Client.addToQueue(this._id, uri);
+		} catch (error) {
+			if (error.status === 404 || error.statusCode === 404) {
+				return this.oAuth2Client.playTrack(this._id, uri);
+			}
+			throw error;
+		}
+	}
+
+	async getPlaybackInfo() {
+		return this.oAuth2Client.getPlaybackInfo();
+	}
+
+	/*
 		Capabilities
 	*/
 	_onCapabilitySpeakerNext() {
