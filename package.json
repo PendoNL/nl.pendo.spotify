@@ -3,6 +3,7 @@
     "test": "node --test test/*.test.js"
   },
   "dependencies": {
-    "homey-oauth2app": "^3.5.7"
+    "homey-oauth2app": "^3.5.7",
+    "sonos": "1.14.3"
   }
 }
