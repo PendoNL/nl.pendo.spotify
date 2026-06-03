@@ -102,12 +102,6 @@ module.exports = class SpotifyConnectDevice extends OAuth2Device {
 		await this.oAuth2Client.shuffle(deviceId, state);
 	}
 
-	async playing(deviceId, state) {
-		state
-			? await this.oAuth2Client.play(deviceId, state)
-			: await this.oAuth2Client.pause(deviceId, state);
-	}
-
 	async volume(deviceId, volume) {
 		return this.oAuth2Client.volume(deviceId, volume);
 	}
@@ -161,22 +155,13 @@ module.exports = class SpotifyConnectDevice extends OAuth2Device {
 		return this.previous(this._id);
 	}
 
-	_onCapabilitySpeakerShuffle() {
-		this.deviceShuffling = !this.deviceShuffling;
-
-		return this.shuffle(this._id, this.deviceShuffling);
+	_onCapabilitySpeakerShuffle(value) {
+		return this.oAuth2Client.shuffle(this._id, value);
 	}
 
-	_onCapabilitySpeakerRepeat() {
-		switch(this.deviceRepeatMode) {
-			case 'track':this.deviceRepeatMode = 'playlist';break;
-			case 'playlist':this.deviceRepeatMode = 'none';break;
-			case 'none':this.deviceRepeatMode = 'track';break;
-		}
-
-		this.setCapabilityValue('speaker_repeat', this.deviceRepeatMode)
-
-		return this.repeat(this._id, this.deviceRepeatMode);
+	_onCapabilitySpeakerRepeat(value) {
+		this.setCapabilityValue('speaker_repeat', value);
+		return this.oAuth2Client.repeat(this._id, value);
 	}
 
 	_onCapabilitySpeakerVolumeSet(volume) {
@@ -184,21 +169,28 @@ module.exports = class SpotifyConnectDevice extends OAuth2Device {
 	}
 
 	_onCapabilitySpeakerVolumeUp() {
-		this.deviceVolume += 0.01;
-
-		return this.volume(this._id, this.deviceVolume);
+		const current = this.getCapabilityValue('volume_set') ?? 0;
+		const next = Math.min(1, current + 0.01);
+		return this.volume(this._id, next);
 	}
 
 	_onCapabilitySpeakerVolumeDown() {
-		this.deviceVolume -= 0.01;
-
-		return this.volume(this._id, this.deviceVolume);
+		const current = this.getCapabilityValue('volume_set') ?? 0;
+		const next = Math.max(0, current - 0.01);
+		return this.volume(this._id, next);
 	}
 
-	_onCapabilitySpeakerVolumeMute() {
-		this.deviceMuted = !this.deviceMuted;
-
-		return this.volume(this._id, this.deviceMuted ? 0 : this.deviceVolume);
+	async _onCapabilitySpeakerVolumeMute(value) {
+		if (value) {
+			const current = this.getCapabilityValue('volume_set') ?? 0;
+			if (current > 0) {
+				await this.setStoreValue('preMuteVolume', current);
+			}
+			return this.volume(this._id, 0);
+		}
+		const stored = this.getStoreValue('preMuteVolume');
+		const restore = (typeof stored === 'number' && stored > 0) ? stored : 0.5;
+		return this.volume(this._id, restore);
 	}
 
 	_onCapabilitySpeakerPlaying(value) {
