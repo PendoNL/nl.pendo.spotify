@@ -112,6 +112,34 @@ module.exports = class SpotifyConnectDevice extends OAuth2Device {
 		return this.oAuth2Client.volume(deviceId, volume);
 	}
 
+	async _lookupDevice() {
+		const { devices } = await this.oAuth2Client.getDevices();
+		let device = devices.find(d => d.id === this._id);
+
+		if (!device) {
+			const storedName = this.getStoreValue('spotifyName');
+			const storedType = this.getStoreValue('spotifyType');
+
+			if (storedName && storedType) {
+				const matches = devices.filter(
+					d => d.name === storedName && d.type === storedType
+				);
+
+				if (matches.length === 1) {
+					device = matches[0];
+					this.log(
+						`Self-healed device ID: ${this._id} → ${device.id} (${storedName})`
+					);
+					this._id = device.id;
+					await this.setStoreValue('id', device.id);
+				}
+			}
+		}
+
+		if (!device) return { status: 'missing' };
+		return { status: device.is_active ? 'active' : 'idle', device };
+	}
+
 	async device(deviceId) {
 		const devices = await this.oAuth2Client.getDevices();
 
@@ -180,48 +208,66 @@ module.exports = class SpotifyConnectDevice extends OAuth2Device {
 	}
 
 	_sync() {
-
 		Promise.resolve().then(async () => {
-			const device = await this.device(this._id);
+			const result = await this._lookupDevice();
 
-			if(device && device.is_active) {
-				this.setAvailable();
+			if (result.status === 'missing') {
+				await this.setUnavailable();
+				return;
+			}
 
-				this.deviceVolume = device.volume_percent / 100;
-				this.deviceMuted = this.deviceVolume === 0;
+			if (!this.getStoreValue('spotifyName')) {
+				await this.setStoreValue('spotifyName', result.device.name);
+				await this.setStoreValue('spotifyType', result.device.type);
+			}
 
-				this.setCapabilityValue('volume_mute', this.deviceMuted)
+			await this.setAvailable();
 
-				const state = await this.state();
+			const volume = result.device.volume_percent / 100;
+			this.setCapabilityValue('volume_set', volume);
+			this.setCapabilityValue('volume_mute', volume === 0);
 
-				this.devicePlaying = state.is_playing;
-				this.deviceShuffling = state.shuffle_state;
-				this.deviceRepeatMode = state.repeat_state === "track" ? "track" : (state.repeat_state === "context" ? "playlist" : "none");
+			if (result.status === 'idle') {
+				this.setCapabilityValue('speaker_playing', false);
+				this.setCapabilityValue('speaker_track', '');
+				this.setCapabilityValue('speaker_artist', '');
+				this.setCapabilityValue('speaker_album', '');
+				this.image.setUrl(null);
+				await this.image.update();
+				return;
+			}
 
-				const artist = state.item.artists.map((artist) => artist.name).join(' & ');
+			const state = await this.state();
 
-				this.setCapabilityValue('speaker_playing', this.devicePlaying)
-				this.setCapabilityValue('speaker_shuffle', this.deviceShuffling)
-				this.setCapabilityValue('speaker_repeat', this.deviceRepeatMode)
-				this.setCapabilityValue('speaker_artist', artist)
-				this.setCapabilityValue('speaker_album', state.item.album.name)
-				this.setCapabilityValue('speaker_track', state.item.name)
+			if (!state) {
+				return;
+			}
 
-				const albumCover = state.item.album.images.find((image) => image.url)?.url;
+			this.setCapabilityValue('speaker_playing', state.is_playing);
+			this.setCapabilityValue('speaker_shuffle', state.shuffle_state);
+			this.setCapabilityValue(
+				'speaker_repeat',
+				state.repeat_state === 'track' ? 'track'
+					: state.repeat_state === 'context' ? 'playlist'
+					: 'none'
+			);
 
-				if(albumCover) {
-					this.image.setUrl(albumCover);
-					this.image.update();
+			if (state.item) {
+				const artist = state.item.artists.map(a => a.name).join(' & ');
+				this.setCapabilityValue('speaker_artist', artist);
+				this.setCapabilityValue('speaker_album', state.item.album.name);
+				this.setCapabilityValue('speaker_track', state.item.name);
+
+				const cover = state.item.album.images.find(img => img.url)?.url;
+				if (cover) {
+					this.image.setUrl(cover);
+					await this.image.update();
 				}
-
-			} else {
-				this.setUnavailable();
 			}
 		}).catch(err => {
 			this.error(err);
 			this.setUnavailable(err).catch(this.error);
 		});
-
 	}
 
 }
