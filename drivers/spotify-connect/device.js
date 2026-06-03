@@ -15,9 +15,7 @@ module.exports = class SpotifyConnectDevice extends OAuth2Device {
 	}
 
 	onOAuth2Init() {
-		const { id } = this.getData();
-
-		this._id = id;
+		this._id = this.getStoreValue('id') || this.getData().id;
 		this.syncInterval = setInterval(() => this._sync(), SYNC_INTERVAL);
 
 		this.createImage();
