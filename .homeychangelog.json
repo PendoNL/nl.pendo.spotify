@@ -43,5 +43,8 @@
   },
   "1.4.1": {
     "en": "Add search filters and load more option in the widget"
+  },
+  "1.5.0": {
+    "en": "Fixes: devices no longer go unavailable when idle, play card now wakes inactive devices via Spotify Connect transfer, play/pause/shuffle/repeat/mute no longer flip the wrong way after external state changes, playlist autocomplete now sees your full library (including Daily Mix), and devices auto-recover when Spotify reassigns their ID."
   }
 }
