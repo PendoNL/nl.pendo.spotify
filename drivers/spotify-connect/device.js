@@ -201,10 +201,11 @@ module.exports = class SpotifyConnectDevice extends OAuth2Device {
 		return this.volume(this._id, this.deviceMuted ? 0 : this.deviceVolume);
 	}
 
-	_onCapabilitySpeakerPlaying() {
-		this.devicePlaying = !this.devicePlaying;
-
-		return this.playing(this._id, this.devicePlaying);
+	_onCapabilitySpeakerPlaying(value) {
+		if (value) {
+			return this.oAuth2Client.transferPlayback(this._id, true);
+		}
+		return this.oAuth2Client.pause(this._id);
 	}
 
 	_sync() {
