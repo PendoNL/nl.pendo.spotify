@@ -60,7 +60,7 @@ module.exports = class SpotifyApp extends OAuth2App {
 		const card = this.homey.flow.getActionCard('play_playlist');
 
 		card.registerArgumentAutocompleteListener('playlist', async (query, args) => {
-			const results = await args.device.oAuth2Client.getMyPlaylists(50);
+			const results = await args.device.oAuth2Client.getAllPlaylistsCached();
 			const q = (query || '').toLowerCase();
 			return results.items
 				.filter(p => p !== null)

@@ -15,9 +15,7 @@ module.exports = class SpotifyConnectDevice extends OAuth2Device {
 	}
 
 	onOAuth2Init() {
-		const { id } = this.getData();
-
-		this._id = id;
+		this._id = this.getStoreValue('id') || this.getData().id;
 		this.syncInterval = setInterval(() => this._sync(), SYNC_INTERVAL);
 
 		this.createImage();
@@ -104,14 +102,36 @@ module.exports = class SpotifyConnectDevice extends OAuth2Device {
 		await this.oAuth2Client.shuffle(deviceId, state);
 	}
 
-	async playing(deviceId, state) {
-		state
-			? await this.oAuth2Client.play(deviceId, state)
-			: await this.oAuth2Client.pause(deviceId, state);
-	}
-
 	async volume(deviceId, volume) {
 		return this.oAuth2Client.volume(deviceId, volume);
+	}
+
+	async _lookupDevice() {
+		const { devices } = await this.oAuth2Client.getDevices();
+		let device = devices.find(d => d.id === this._id);
+
+		if (!device) {
+			const storedName = this.getStoreValue('spotifyName');
+			const storedType = this.getStoreValue('spotifyType');
+
+			if (storedName && storedType) {
+				const matches = devices.filter(
+					d => d.name === storedName && d.type === storedType
+				);
+
+				if (matches.length === 1) {
+					device = matches[0];
+					this.log(
+						`Self-healed device ID: ${this._id} → ${device.id} (${storedName})`
+					);
+					this._id = device.id;
+					await this.setStoreValue('id', device.id);
+				}
+			}
+		}
+
+		if (!device) return { status: 'missing' };
+		return { status: device.is_active ? 'active' : 'idle', device };
 	}
 
 	async device(deviceId) {
@@ -161,22 +181,13 @@ module.exports = class SpotifyConnectDevice extends OAuth2Device {
 		return this.previous(this._id);
 	}
 
-	_onCapabilitySpeakerShuffle() {
-		this.deviceShuffling = !this.deviceShuffling;
-
-		return this.shuffle(this._id, this.deviceShuffling);
+	_onCapabilitySpeakerShuffle(value) {
+		return this.oAuth2Client.shuffle(this._id, value);
 	}
 
-	_onCapabilitySpeakerRepeat() {
-		switch(this.deviceRepeatMode) {
-			case 'track':this.deviceRepeatMode = 'playlist';break;
-			case 'playlist':this.deviceRepeatMode = 'none';break;
-			case 'none':this.deviceRepeatMode = 'track';break;
-		}
-
-		this.setCapabilityValue('speaker_repeat', this.deviceRepeatMode)
-
-		return this.repeat(this._id, this.deviceRepeatMode);
+	_onCapabilitySpeakerRepeat(value) {
+		this.setCapabilityValue('speaker_repeat', value);
+		return this.oAuth2Client.repeat(this._id, value);
 	}
 
 	_onCapabilitySpeakerVolumeSet(volume) {
@@ -184,72 +195,98 @@ module.exports = class SpotifyConnectDevice extends OAuth2Device {
 	}
 
 	_onCapabilitySpeakerVolumeUp() {
-		this.deviceVolume += 0.01;
-
-		return this.volume(this._id, this.deviceVolume);
+		const current = this.getCapabilityValue('volume_set') ?? 0;
+		const next = Math.min(1, current + 0.01);
+		return this.volume(this._id, next);
 	}
 
 	_onCapabilitySpeakerVolumeDown() {
-		this.deviceVolume -= 0.01;
-
-		return this.volume(this._id, this.deviceVolume);
+		const current = this.getCapabilityValue('volume_set') ?? 0;
+		const next = Math.max(0, current - 0.01);
+		return this.volume(this._id, next);
 	}
 
-	_onCapabilitySpeakerVolumeMute() {
-		this.deviceMuted = !this.deviceMuted;
-
-		return this.volume(this._id, this.deviceMuted ? 0 : this.deviceVolume);
+	async _onCapabilitySpeakerVolumeMute(value) {
+		if (value) {
+			const current = this.getCapabilityValue('volume_set') ?? 0;
+			if (current > 0) {
+				await this.setStoreValue('preMuteVolume', current);
+			}
+			return this.volume(this._id, 0);
+		}
+		const stored = this.getStoreValue('preMuteVolume');
+		const restore = (typeof stored === 'number' && stored > 0) ? stored : 0.5;
+		return this.volume(this._id, restore);
 	}
 
-	_onCapabilitySpeakerPlaying() {
-		this.devicePlaying = !this.devicePlaying;
-
-		return this.playing(this._id, this.devicePlaying);
+	_onCapabilitySpeakerPlaying(value) {
+		if (value) {
+			return this.oAuth2Client.transferPlayback(this._id, true);
+		}
+		return this.oAuth2Client.pause(this._id);
 	}
 
 	_sync() {
-
 		Promise.resolve().then(async () => {
-			const device = await this.device(this._id);
+			const result = await this._lookupDevice();
 
-			if(device && device.is_active) {
-				this.setAvailable();
+			if (result.status === 'missing') {
+				await this.setUnavailable();
+				return;
+			}
 
-				this.deviceVolume = device.volume_percent / 100;
-				this.deviceMuted = this.deviceVolume === 0;
+			if (!this.getStoreValue('spotifyName')) {
+				await this.setStoreValue('spotifyName', result.device.name);
+				await this.setStoreValue('spotifyType', result.device.type);
+			}
 
-				this.setCapabilityValue('volume_mute', this.deviceMuted)
+			await this.setAvailable();
 
-				const state = await this.state();
+			const volume = result.device.volume_percent / 100;
+			this.setCapabilityValue('volume_set', volume);
+			this.setCapabilityValue('volume_mute', volume === 0);
 
-				this.devicePlaying = state.is_playing;
-				this.deviceShuffling = state.shuffle_state;
-				this.deviceRepeatMode = state.repeat_state === "track" ? "track" : (state.repeat_state === "context" ? "playlist" : "none");
+			if (result.status === 'idle') {
+				this.setCapabilityValue('speaker_playing', false);
+				this.setCapabilityValue('speaker_track', '');
+				this.setCapabilityValue('speaker_artist', '');
+				this.setCapabilityValue('speaker_album', '');
+				this.image.setUrl(null);
+				await this.image.update();
+				return;
+			}
 
-				const artist = state.item.artists.map((artist) => artist.name).join(' & ');
+			const state = await this.state();
 
-				this.setCapabilityValue('speaker_playing', this.devicePlaying)
-				this.setCapabilityValue('speaker_shuffle', this.deviceShuffling)
-				this.setCapabilityValue('speaker_repeat', this.deviceRepeatMode)
-				this.setCapabilityValue('speaker_artist', artist)
-				this.setCapabilityValue('speaker_album', state.item.album.name)
-				this.setCapabilityValue('speaker_track', state.item.name)
+			if (!state) {
+				return;
+			}
 
-				const albumCover = state.item.album.images.find((image) => image.url)?.url;
+			this.setCapabilityValue('speaker_playing', state.is_playing);
+			this.setCapabilityValue('speaker_shuffle', state.shuffle_state);
+			this.setCapabilityValue(
+				'speaker_repeat',
+				state.repeat_state === 'track' ? 'track'
+					: state.repeat_state === 'context' ? 'playlist'
+					: 'none'
+			);
 
-				if(albumCover) {
-					this.image.setUrl(albumCover);
-					this.image.update();
+			if (state.item) {
+				const artist = state.item.artists.map(a => a.name).join(' & ');
+				this.setCapabilityValue('speaker_artist', artist);
+				this.setCapabilityValue('speaker_album', state.item.album.name);
+				this.setCapabilityValue('speaker_track', state.item.name);
+
+				const cover = state.item.album.images.find(img => img.url)?.url;
+				if (cover) {
+					this.image.setUrl(cover);
+					await this.image.update();
 				}
-
-			} else {
-				this.setUnavailable();
 			}
 		}).catch(err => {
 			this.error(err);
 			this.setUnavailable(err).catch(this.error);
 		});
-
 	}
 
 }
