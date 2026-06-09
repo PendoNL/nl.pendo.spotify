@@ -64,7 +64,7 @@ module.exports = class SpotifyApp extends OAuth2App {
 
 		playPlaylistCard.registerArgumentAutocompleteListener('playlist', async (query, args) => {
 			const oAuth2Client = args.device.oAuth2Client;
-			const results = await oAuth2Client.getMyPlaylists(50);
+			const results = await oAuth2Client.getAllPlaylistsCached();
 
 			const queryLower = (query || '').toLowerCase();
 
